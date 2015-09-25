@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C11084F71B577878003F800B /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C11084F61B577878003F800B /* CloudKit.framework */; };
+		C11084FA1B5CA4BB003F800B /* KeychainItemWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = C11084F91B5CA4BB003F800B /* KeychainItemWrapper.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		C11084FC1B5CA73B003F800B /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C11084FB1B5CA73B003F800B /* Security.framework */; };
+		C11084FE1B63ED19003F800B /* 177-building black on white.png in Resources */ = {isa = PBXBuildFile; fileRef = C11084FD1B63ED19003F800B /* 177-building black on white.png */; };
+		C11085001B63EEAB003F800B /* 53-house white on black.png in Resources */ = {isa = PBXBuildFile; fileRef = C11084FF1B63EEAB003F800B /* 53-house white on black.png */; };
+		C118B8191B768FF100A07AED /* 96-book.png in Resources */ = {isa = PBXBuildFile; fileRef = C118B8181B768FF100A07AED /* 96-book.png */; };
 		C12FB8D41B2371DB00ACB410 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C12FB8D31B2371DB00ACB410 /* main.m */; };
 		C12FB8D71B2371DB00ACB410 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C12FB8D61B2371DB00ACB410 /* AppDelegate.m */; };
 		C12FB8DA1B2371DB00ACB410 /* FirstViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C12FB8D91B2371DB00ACB410 /* FirstViewController.m */; };
@@ -15,6 +21,22 @@
 		C12FB8E21B2371DB00ACB410 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C12FB8E11B2371DB00ACB410 /* Images.xcassets */; };
 		C12FB8E51B2371DB00ACB410 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = C12FB8E31B2371DB00ACB410 /* LaunchScreen.xib */; };
 		C12FB8F11B2371DB00ACB410 /* PrincetonRideShareTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C12FB8F01B2371DB00ACB410 /* PrincetonRideShareTests.m */; };
+		C12FB8FD1B23D66400ACB410 /* 179-notepad.png in Resources */ = {isa = PBXBuildFile; fileRef = C12FB8FC1B23D66400ACB410 /* 179-notepad.png */; };
+		C12FB8FF1B23D68000ACB410 /* 112-group.png in Resources */ = {isa = PBXBuildFile; fileRef = C12FB8FE1B23D68000ACB410 /* 112-group.png */; };
+		C12FB9011B23D69500ACB410 /* 05-shuffle.png in Resources */ = {isa = PBXBuildFile; fileRef = C12FB9001B23D69500ACB410 /* 05-shuffle.png */; };
+		C12FB9051B23E53C00ACB410 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C12FB9041B23E53C00ACB410 /* MapKit.framework */; };
+		C12FB9081B2406EA00ACB410 /* ThirdViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C12FB9071B2406EA00ACB410 /* ThirdViewController.m */; };
+		C12FB90B1B24072000ACB410 /* MessageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C12FB90A1B24072000ACB410 /* MessageViewController.m */; };
+		C14FD7231B3A199B006D6721 /* ChoicesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C14FD7221B3A199B006D6721 /* ChoicesViewController.m */; };
+		C14FD7251B3A19C0006D6721 /* ChoicesViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C14FD7241B3A19C0006D6721 /* ChoicesViewController.xib */; };
+		C14FD7281B3A1AF1006D6721 /* f_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = C14FD7261B3A1AF1006D6721 /* f_logo.png */; };
+		C14FD7291B3A1AF1006D6721 /* twitter2.png in Resources */ = {isa = PBXBuildFile; fileRef = C14FD7271B3A1AF1006D6721 /* twitter2.png */; };
+		C14FD72B1B3A4EBB006D6721 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C14FD72A1B3A4EBB006D6721 /* CoreLocation.framework */; };
+		C1D70DB51B4648C800E187D7 /* Circle image 21.png in Resources */ = {isa = PBXBuildFile; fileRef = C1D70DB41B4648C800E187D7 /* Circle image 21.png */; };
+		C1D70DB71B4648D200E187D7 /* X image 21.png in Resources */ = {isa = PBXBuildFile; fileRef = C1D70DB61B4648D200E187D7 /* X image 21.png */; };
+		C1D70DB91B4739A900E187D7 /* Princeton Map.png in Resources */ = {isa = PBXBuildFile; fileRef = C1D70DB81B4739A900E187D7 /* Princeton Map.png */; };
+		C1FA5A4E1B897FF600F01291 /* refreshEmblem.png in Resources */ = {isa = PBXBuildFile; fileRef = C1FA5A4D1B897FF600F01291 /* refreshEmblem.png */; };
+		C1FA5A501B89935300F01291 /* sideArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = C1FA5A4F1B89935300F01291 /* sideArrow.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -28,6 +50,14 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		C11084F51B57785F003F800B /* PrincetonRideShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrincetonRideShare.entitlements; sourceTree = "<group>"; };
+		C11084F61B577878003F800B /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
+		C11084F81B5CA4BB003F800B /* KeychainItemWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeychainItemWrapper.h; sourceTree = "<group>"; };
+		C11084F91B5CA4BB003F800B /* KeychainItemWrapper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KeychainItemWrapper.m; sourceTree = "<group>"; };
+		C11084FB1B5CA73B003F800B /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		C11084FD1B63ED19003F800B /* 177-building black on white.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "177-building black on white.png"; sourceTree = "<group>"; };
+		C11084FF1B63EEAB003F800B /* 53-house white on black.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "53-house white on black.png"; sourceTree = "<group>"; };
+		C118B8181B768FF100A07AED /* 96-book.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "96-book.png"; sourceTree = "<group>"; };
 		C12FB8CE1B2371DB00ACB410 /* PrincetonRideShare.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PrincetonRideShare.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C12FB8D21B2371DB00ACB410 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C12FB8D31B2371DB00ACB410 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -43,6 +73,25 @@
 		C12FB8EA1B2371DB00ACB410 /* PrincetonRideShareTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PrincetonRideShareTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C12FB8EF1B2371DB00ACB410 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C12FB8F01B2371DB00ACB410 /* PrincetonRideShareTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PrincetonRideShareTests.m; sourceTree = "<group>"; };
+		C12FB8FC1B23D66400ACB410 /* 179-notepad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "179-notepad.png"; sourceTree = "<group>"; };
+		C12FB8FE1B23D68000ACB410 /* 112-group.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "112-group.png"; sourceTree = "<group>"; };
+		C12FB9001B23D69500ACB410 /* 05-shuffle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "05-shuffle.png"; sourceTree = "<group>"; };
+		C12FB9041B23E53C00ACB410 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
+		C12FB9061B2406EA00ACB410 /* ThirdViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThirdViewController.h; sourceTree = "<group>"; };
+		C12FB9071B2406EA00ACB410 /* ThirdViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ThirdViewController.m; sourceTree = "<group>"; };
+		C12FB9091B24072000ACB410 /* MessageViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MessageViewController.h; sourceTree = "<group>"; };
+		C12FB90A1B24072000ACB410 /* MessageViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MessageViewController.m; sourceTree = "<group>"; };
+		C14FD7211B3A199B006D6721 /* ChoicesViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChoicesViewController.h; sourceTree = "<group>"; };
+		C14FD7221B3A199B006D6721 /* ChoicesViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChoicesViewController.m; sourceTree = "<group>"; };
+		C14FD7241B3A19C0006D6721 /* ChoicesViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ChoicesViewController.xib; sourceTree = "<group>"; };
+		C14FD7261B3A1AF1006D6721 /* f_logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = f_logo.png; sourceTree = "<group>"; };
+		C14FD7271B3A1AF1006D6721 /* twitter2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = twitter2.png; sourceTree = "<group>"; };
+		C14FD72A1B3A4EBB006D6721 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
+		C1D70DB41B4648C800E187D7 /* Circle image 21.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Circle image 21.png"; sourceTree = "<group>"; };
+		C1D70DB61B4648D200E187D7 /* X image 21.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "X image 21.png"; sourceTree = "<group>"; };
+		C1D70DB81B4739A900E187D7 /* Princeton Map.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Princeton Map.png"; sourceTree = "<group>"; };
+		C1FA5A4D1B897FF600F01291 /* refreshEmblem.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = refreshEmblem.png; sourceTree = "<group>"; };
+		C1FA5A4F1B89935300F01291 /* sideArrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = sideArrow.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,6 +99,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C11084FC1B5CA73B003F800B /* Security.framework in Frameworks */,
+				C11084F71B577878003F800B /* CloudKit.framework in Frameworks */,
+				C14FD72B1B3A4EBB006D6721 /* CoreLocation.framework in Frameworks */,
+				C12FB9051B23E53C00ACB410 /* MapKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -66,6 +119,10 @@
 		C12FB8C51B2371DB00ACB410 = {
 			isa = PBXGroup;
 			children = (
+				C11084FB1B5CA73B003F800B /* Security.framework */,
+				C11084F61B577878003F800B /* CloudKit.framework */,
+				C14FD72A1B3A4EBB006D6721 /* CoreLocation.framework */,
+				C12FB9041B23E53C00ACB410 /* MapKit.framework */,
 				C12FB8D01B2371DB00ACB410 /* PrincetonRideShare */,
 				C12FB8ED1B2371DB00ACB410 /* PrincetonRideShareTests */,
 				C12FB8CF1B2371DB00ACB410 /* Products */,
@@ -84,6 +141,7 @@
 		C12FB8D01B2371DB00ACB410 /* PrincetonRideShare */ = {
 			isa = PBXGroup;
 			children = (
+				C11084F51B57785F003F800B /* PrincetonRideShare.entitlements */,
 				C12FB8D51B2371DB00ACB410 /* AppDelegate.h */,
 				C12FB8D61B2371DB00ACB410 /* AppDelegate.m */,
 				C12FB8D81B2371DB00ACB410 /* FirstViewController.h */,
@@ -91,6 +149,15 @@
 				C12FB8DB1B2371DB00ACB410 /* SecondViewController.h */,
 				C12FB8DC1B2371DB00ACB410 /* SecondViewController.m */,
 				C12FB8DE1B2371DB00ACB410 /* Main.storyboard */,
+				C12FB9091B24072000ACB410 /* MessageViewController.h */,
+				C12FB90A1B24072000ACB410 /* MessageViewController.m */,
+				C12FB9061B2406EA00ACB410 /* ThirdViewController.h */,
+				C12FB9071B2406EA00ACB410 /* ThirdViewController.m */,
+				C14FD7211B3A199B006D6721 /* ChoicesViewController.h */,
+				C14FD7221B3A199B006D6721 /* ChoicesViewController.m */,
+				C14FD7241B3A19C0006D6721 /* ChoicesViewController.xib */,
+				C11084F81B5CA4BB003F800B /* KeychainItemWrapper.h */,
+				C11084F91B5CA4BB003F800B /* KeychainItemWrapper.m */,
 				C12FB8E11B2371DB00ACB410 /* Images.xcassets */,
 				C12FB8E31B2371DB00ACB410 /* LaunchScreen.xib */,
 				C12FB8D11B2371DB00ACB410 /* Supporting Files */,
@@ -101,6 +168,19 @@
 		C12FB8D11B2371DB00ACB410 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				C1D70DB41B4648C800E187D7 /* Circle image 21.png */,
+				C1FA5A4F1B89935300F01291 /* sideArrow.png */,
+				C1FA5A4D1B897FF600F01291 /* refreshEmblem.png */,
+				C1D70DB61B4648D200E187D7 /* X image 21.png */,
+				C14FD7261B3A1AF1006D6721 /* f_logo.png */,
+				C14FD7271B3A1AF1006D6721 /* twitter2.png */,
+				C1D70DB81B4739A900E187D7 /* Princeton Map.png */,
+				C12FB8FC1B23D66400ACB410 /* 179-notepad.png */,
+				C12FB8FE1B23D68000ACB410 /* 112-group.png */,
+				C12FB9001B23D69500ACB410 /* 05-shuffle.png */,
+				C118B8181B768FF100A07AED /* 96-book.png */,
+				C11084FD1B63ED19003F800B /* 177-building black on white.png */,
+				C11084FF1B63EEAB003F800B /* 53-house white on black.png */,
 				C12FB8D21B2371DB00ACB410 /* Info.plist */,
 				C12FB8D31B2371DB00ACB410 /* main.m */,
 			);
@@ -173,6 +253,15 @@
 				TargetAttributes = {
 					C12FB8CD1B2371DB00ACB410 = {
 						CreatedOnToolsVersion = 6.3.1;
+						DevelopmentTeam = CYJEUZBXCK;
+						SystemCapabilities = {
+							com.apple.Maps.iOS = {
+								enabled = 1;
+							};
+							com.apple.iCloud = {
+								enabled = 1;
+							};
+						};
 					};
 					C12FB8E91B2371DB00ACB410 = {
 						CreatedOnToolsVersion = 6.3.1;
@@ -204,9 +293,23 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C118B8191B768FF100A07AED /* 96-book.png in Resources */,
+				C1FA5A501B89935300F01291 /* sideArrow.png in Resources */,
+				C1FA5A4E1B897FF600F01291 /* refreshEmblem.png in Resources */,
+				C14FD7291B3A1AF1006D6721 /* twitter2.png in Resources */,
 				C12FB8E01B2371DB00ACB410 /* Main.storyboard in Resources */,
+				C14FD7251B3A19C0006D6721 /* ChoicesViewController.xib in Resources */,
+				C11084FE1B63ED19003F800B /* 177-building black on white.png in Resources */,
+				C12FB8FF1B23D68000ACB410 /* 112-group.png in Resources */,
+				C11085001B63EEAB003F800B /* 53-house white on black.png in Resources */,
+				C12FB9011B23D69500ACB410 /* 05-shuffle.png in Resources */,
 				C12FB8E51B2371DB00ACB410 /* LaunchScreen.xib in Resources */,
+				C1D70DB51B4648C800E187D7 /* Circle image 21.png in Resources */,
+				C1D70DB71B4648D200E187D7 /* X image 21.png in Resources */,
 				C12FB8E21B2371DB00ACB410 /* Images.xcassets in Resources */,
+				C12FB8FD1B23D66400ACB410 /* 179-notepad.png in Resources */,
+				C1D70DB91B4739A900E187D7 /* Princeton Map.png in Resources */,
+				C14FD7281B3A1AF1006D6721 /* f_logo.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -224,7 +327,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C12FB90B1B24072000ACB410 /* MessageViewController.m in Sources */,
 				C12FB8DD1B2371DB00ACB410 /* SecondViewController.m in Sources */,
+				C12FB9081B2406EA00ACB410 /* ThirdViewController.m in Sources */,
+				C14FD7231B3A199B006D6721 /* ChoicesViewController.m in Sources */,
+				C11084FA1B5CA4BB003F800B /* KeychainItemWrapper.m in Sources */,
 				C12FB8D71B2371DB00ACB410 /* AppDelegate.m in Sources */,
 				C12FB8DA1B2371DB00ACB410 /* FirstViewController.m in Sources */,
 				C12FB8D41B2371DB00ACB410 /* main.m in Sources */,
@@ -353,9 +460,15 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "LaunchImage-2";
+				CODE_SIGN_ENTITLEMENTS = PrincetonRideShare/PrincetonRideShare.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = PrincetonRideShare/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Debug;
 		};
@@ -363,9 +476,15 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "LaunchImage-2";
+				CODE_SIGN_ENTITLEMENTS = PrincetonRideShare/PrincetonRideShare.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = PrincetonRideShare/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Release;
 		};
@@ -422,6 +541,7 @@
 				C12FB8F61B2371DB00ACB410 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		C12FB8F71B2371DB00ACB410 /* Build configuration list for PBXNativeTarget "PrincetonRideShareTests" */ = {
 			isa = XCConfigurationList;
@@ -430,6 +550,7 @@
 				C12FB8F91B2371DB00ACB410 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

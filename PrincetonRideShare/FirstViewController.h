@@ -8,8 +8,17 @@
 
 #import <UIKit/UIKit.h>
 
-@interface FirstViewController : UIViewController
+@interface FirstViewController : UIViewController{
+    
+    IBOutlet UITextView *textDisplay;
+    IBOutlet UIView *containingView;
+    IBOutlet UILabel *uniqueID;
+    
+    
+    
+}
 
+-(void)getParameters:(NSMutableDictionary *)theParameters;
 
 @end
 

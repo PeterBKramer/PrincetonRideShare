@@ -1,24 +1,22 @@
 //
-//  SecondViewController.h
+//  ThirdViewController.h
 //  PrincetonRideShare
 //
-//  Created by Peter B Kramer on 6/6/15.
+//  Created by Peter B Kramer on 6/7/15.
 //  Copyright (c) 2015 Peter B Kramer. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
 #import <MapKit/MapKit.h>
+#import <CloudKit/CloudKit.h>
 
-@interface SecondViewController : UIViewController<MKMapViewDelegate>{
-    
+@interface ThirdViewController : UIViewController<MKMapViewDelegate,UITableViewDataSource,UITableViewDelegate>{
+        
     IBOutlet MKMapView *mapIt;
-    IBOutlet UILabel *timeBetween;
+    IBOutlet UILabel *arriveB;
+    IBOutlet UILabel *leaveB;
     IBOutlet UIDatePicker *fromTime;
     IBOutlet UIDatePicker *toTime;
-    IBOutlet UIButton *cancelReturn;
-    IBOutlet UILabel *tapToSet;
-    IBOutlet UIButton *resetA;
-    IBOutlet UIButton *resetB;
     IBOutlet UIButton *arriveTimes;
     IBOutlet UIButton *leaveTimes;
     IBOutlet UISegmentedControl *myCarOrYoursControl;
@@ -31,19 +29,21 @@
     IBOutlet UIButton *Sunday;
     IBOutlet UIView *containingView;
     IBOutlet UISegmentedControl *rideSelector;
-    IBOutlet UIButton *deleteEntry;
-    IBOutlet UIButton *showHome;
-    IBOutlet UIButton *showWork;
-    IBOutlet UIButton *matchRide;
-    
+    IBOutlet UIButton *locationA;
+    IBOutlet UIButton *locationB;
+    IBOutlet UIButton *matchNearA;
+    IBOutlet UIButton *infoButton;
+    IBOutlet UIActivityIndicatorView *matching;
+    IBOutlet UILabel *tapMatchForInfo;
+    IBOutlet UISwitch *filterData;
+    IBOutlet UIButton *getDataOrStop;
+    IBOutlet UITableView *entriesInAGroup;
     
    
     
 }
-
 -(void)getParameters:(NSMutableDictionary *)theParameters;
 
 
 
 @end
-
