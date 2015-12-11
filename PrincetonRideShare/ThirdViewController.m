@@ -19,6 +19,7 @@
     NSMutableArray *myAnnotations;
     BOOL requestFromAlert;
     NSDateFormatter *dateFormat;
+    NSDateFormatter *fullDateFormat;
     NSString* iDNumberSelected;
 //    NSString *rideLetter;
     float edgeDistance;
@@ -40,9 +41,19 @@
 
 -(void)getParameters:(NSMutableDictionary *)theParameters{
     parameters=theParameters;
+    int timeVariable=[NSDate timeIntervalSinceReferenceDate];
+    randomNumber=abs((int)[[[[UIDevice currentDevice] identifierForVendor] UUIDString] hash])%10000000 +timeVariable%1000000;
+    
  //   NSLog(@"got parameters in second    %@",parameters);
 }
 
+
+-(void)ridesWereUpdated{
+    if(self.view.superview){
+     //   NSLog(@"updating rides in Match");
+        [self changeSelectedRide:nil];
+    }
+}
 
 -(void)viewWillAppear:(BOOL)animated{
     [super viewWillAppear:animated];
@@ -53,17 +64,18 @@
     [self changeSelectedRide:nil];  // resets map if needed then redraws the screen
    
     
-    if(![parameters objectForKey:@"TimeOfLastUpdate"]){
-        [parameters setObject:[NSDate dateWithTimeIntervalSinceNow:-24*60*60] forKey:@"TimeOfLastUpdate"];
-    }
-    if(![parameters objectForKey:@"UpdateInformation"]){
-        [parameters setObject:[NSNumber numberWithBool:NO] forKey:@"UpdateInformation"];
-    }
-    if([[parameters objectForKey:@"UpdateInformation"] boolValue] || [[parameters objectForKey:@"TimeOfLastUpdate"] timeIntervalSinceNow]<=-24*60*60){
+ //   if(![parameters objectForKey:@"TimeOfLastUpdate"]){
+   //     [parameters setObject:[NSDate dateWithTimeIntervalSinceNow:-24*60*60] forKey:@"TimeOfLastUpdate"];
+  //  }
+    
+//    if(![parameters objectForKey:@"UpdateInformation"]){
+  //      [parameters setObject:[NSNumber numberWithBool:NO] forKey:@"UpdateInformation"];
+    //}
+ //   if([[parameters objectForKey:@"UpdateInformation"] boolValue] || [[parameters objectForKey:@"TimeOfLastUpdate"] timeIntervalSinceNow]<=-24*60*60){
         
-                [self pushMyDataToCloud];
+   //             [self pushMyDataToCloud];
           
-    }
+   // }
     
     
     
@@ -82,9 +94,8 @@
     
 }
 
-
+/*
 -(void)iCloudErrorMessage:(NSString *)message{
-    
     dispatch_async(dispatch_get_main_queue(), ^{
     //    NSLog(@"Issue an error message");
         if(self.presentedViewController){
@@ -100,9 +111,85 @@
         }
     });
 }
+*/
+
+-(void)returnWithMatches:(NSNotification *)notification{
+    if([[notification object] isEqual:@"Error"]){
+        [self titleForMatchNearA:@"Match times       ."];
+    }else if([parameters objectForKey:@"Show Match"]){
+        NSString *theRideLetter=[[[parameters objectForKey:@"Show Match"] substringFromIndex:[[parameters objectForKey:@"Show Match"] rangeOfString:@"-"].location+1] substringToIndex:1];
+        int rideSelected=(int)[@"0ABCDE!!!!!!!" rangeOfString:theRideLetter ].location;
+        [parameters removeObjectForKey:@"Show Match"];
+        
+        NSMutableArray *theResults=[[NSMutableArray alloc] initWithArray:[[notification object] allValues]];
+        for(long I=[theResults count]-1;I>=0; I--){
+            if([[[theResults objectAtIndex:I] objectForKey:@"IDNumber"] intValue]%10 ==0)
+                    [theResults removeObjectAtIndex:I];
+        }
+        CLLocation *home1=[[CLLocation alloc] initWithLatitude:[[theSelectedRide objectForKey:@"GeoAlat"] doubleValue] longitude:[[theSelectedRide objectForKey:@"GeoA"] doubleValue]];
+        NSArray *theResultsSorted=[theResults sortedArrayUsingComparator:^(id obj1, id obj2){
+            NSDictionary *object1=obj1;
+            NSDictionary *object2=obj2;
+            if([[object1 objectForKey:@"IDNumber"] intValue]%10==rideSelected){
+                return (NSComparisonResult)NSOrderedAscending;
+            }else if([[object1 objectForKey:@"HomeLocation"] distanceFromLocation:home1]>
+                     [[object2 objectForKey:@"HomeLocation"] distanceFromLocation:home1] ){
+                return (NSComparisonResult)NSOrderedDescending;
+            }else{
+                return NSOrderedAscending;
+            }
+        }];
+        [theSelectedRide setObject:theResultsSorted forKey:@"Nearby50"];
+        [self titleForMatchNearA:@"Match times       ."];  // this is a method
+        NSArray *currentAnnotations=[mapIt annotations];
+        NSString *whatToShow=@"Home 1";
+        NSString *whatToShowComma=@"Home 1,";
+        for (int I=0;I<[currentAnnotations count] ; I++) {
+            NSString *currentTitle=[[currentAnnotations objectAtIndex:I] title];
+            //    NSLog(@"the currentTitle is %@",currentTitle);
+            if(currentTitle.length<6 || currentTitle.length<whatToShow.length)currentTitle=@"this is a longer title"; //  in both cases it doesn't contain whatToShow so just preven crashes
+            if([currentTitle containsString:whatToShowComma] ||
+               [[currentTitle substringFromIndex:(currentTitle.length-whatToShow.length)] isEqualToString:whatToShow]){
+                requestFromAlert=YES;
+                [mapIt selectAnnotation:[currentAnnotations objectAtIndex:I] animated:YES];
+                MKPointAnnotation *theAnnotation=[currentAnnotations objectAtIndex:I];
+                MKCoordinateRegion region = MKCoordinateRegionMakeWithDistance(theAnnotation.coordinate,mapIt.region.span.latitudeDelta*1000/.009006, mapIt.region.span.longitudeDelta*1000/.014);
+                
+                [mapIt setRegion:region animated:YES];
+                
+                [self performSelector:@selector(deselectAnnotation:) withObject:[currentAnnotations objectAtIndex:I] afterDelay:3.0f];
+                break;
+                
+            }
+        }
+    }else{
+        NSMutableArray *theResults=[[NSMutableArray alloc] initWithArray:[notification object]];
+        CLLocation *home1=[[CLLocation alloc] initWithLatitude:[[theSelectedRide objectForKey:@"GeoAlat"] doubleValue] longitude:[[theSelectedRide objectForKey:@"GeoA"] doubleValue]];
+        for(long I=[theResults count]-1;I>=0; I--){
+            if([[[theResults objectAtIndex:I] objectForKey:@"IDNumber"] intValue]/10 ==[[parameters objectForKey:@"iCloudRecordID"] intValue]  ||
+               [[[theResults objectAtIndex:I] objectForKey:@"IDNumber"] intValue]%10 ==0)
+                    [theResults removeObjectAtIndex:I];
+        }
+        NSArray *theResultsLessMe=[theResults sortedArrayUsingComparator:^(id obj1, id obj2){
+            NSDictionary *object1=obj1;
+            NSDictionary *object2=obj2;
+            if([[object1 objectForKey:@"HomeLocation"] distanceFromLocation:home1]>
+               [[object2 objectForKey:@"HomeLocation"] distanceFromLocation:home1]){
+                return (NSComparisonResult)NSOrderedDescending;
+            }else{
+                return NSOrderedAscending;
+            }
+        }];
+        [theSelectedRide setObject:theResultsLessMe forKey:@"Nearby50"];
+        [theSelectedRide setObject:[NSDate dateWithTimeIntervalSinceNow:0] forKey:@"TimeLastDownloaded"];
+        [self titleForMatchNearA:@"Match times       ."];  // this is a method
+    }
+}
 
 
--(void)downloadMatchData{
+/*
+
+-(void)downloadMatchData{  // from a specific request for a given user who send a message to us
     
     [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
     CKContainer *defaultContainer=[CKContainer defaultContainer];
@@ -112,7 +199,7 @@
     for (int I=0;I<=5;I++){
         [recordIDs addObject:[[CKRecordID alloc] initWithRecordName:[NSString stringWithFormat:@"%i%i",[[parameters objectForKey:@"Show Match"] intValue],I]]];
     }
-    NSString *theRideLetter=[[parameters objectForKey:@"Show Match"] substringFromIndex:7];
+    NSString *theRideLetter=[[[parameters objectForKey:@"Show Match"] substringFromIndex:[[parameters objectForKey:@"Show Match"] rangeOfString:@"-"].location+1] substringToIndex:1];
     int rideSelected=(int)[@"0ABCDE!!!!!!!" rangeOfString:theRideLetter ].location;
     [parameters removeObjectForKey:@"Show Match"];
  //   NSLog(@"the ride letter is %@   %i",theRideLetter,rideSelected);
@@ -128,9 +215,14 @@
             if(seconds>0){
                 [self iCloudErrorMessage:[NSString stringWithFormat:@"There was an iCloud resource issue (1) trying to get the Match data.  Please try again after %i seconds.",seconds]];
             }else{
-                [self iCloudErrorMessage:@"There was an error (1) trying to get the Match data.  Please try again later."];
+                [self iCloudErrorMessage:[NSString stringWithFormat: @"There was an error (1) trying to get the Match data.  Please try again later. (%@)",error]];
+                
             }
         }else{
+            
+            
+          //  NSLog(@"the rides downloaded = %@",recordsByRecordID);
+            
             dispatch_async(dispatch_get_main_queue(), ^{
                 [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
                 NSMutableArray *theResults=[[NSMutableArray alloc] initWithArray:[recordsByRecordID allValues]];
@@ -193,7 +285,7 @@
     
     
 }
--(void)downloadData{
+-(void)downloadData{   // query for matches close to home location
     
     
     //  here you go out to CloudKit and download 50 users closest to the home location.
@@ -246,9 +338,9 @@
              if(seconds>0){
                  [self iCloudErrorMessage:[NSString stringWithFormat:@"There was an iCloud resource issue trying to access other users' Rides.  Please try again after %i seconds.",seconds]];
              }else{
-              //   NSLog(@"error is %ld   %@",(long)error.code,error);
+               //  NSLog(@"error is %ld   %@",(long)error.code,error);
                  
-                 [self iCloudErrorMessage:@"There was an error trying to get other users' Rides.  Please try again later."];
+                 [self iCloudErrorMessage:[NSString stringWithFormat: @"There was an error trying to get other users' Rides.  Please try again later. (%@)",error]];
              }
              // return ;
          }else{
@@ -294,7 +386,7 @@
     
     
 }
-
+*/
 -(void)titleForMatchNearA:(NSString *)title{
  //   NSLog(@"here 222222    %@",title);
     [matchNearA setTitle:title forState:UIControlStateDisabled];
@@ -302,7 +394,7 @@
         [matchNearA setTitleColor:[UIColor colorWithRed:0 green:122/255. blue:1.0 alpha:1.0] forState:UIControlStateDisabled];
         
         [matching stopAnimating];
-        [getDataOrStop setImage:[UIImage imageNamed:@"Circle image 21.png"] forState:UIControlStateNormal];
+        [getDataOrStop setImage:[UIImage imageNamed:@"refreshEmblem.png"] forState:UIControlStateNormal];
         getDataOrStop.hidden=NO;
         matchNearA.enabled=NO;
         filterData.hidden=NO;
@@ -310,7 +402,7 @@
     }else if([title isEqualToString:@"Set Home!"]){
         [matchNearA setTitleColor:[UIColor colorWithRed:1.0 green:0 blue:.0 alpha:1.0] forState:UIControlStateNormal];
         [matching stopAnimating];
-        [getDataOrStop setImage:[UIImage imageNamed:@"Circle image 21.png"] forState:UIControlStateNormal]; // doesn't matter but reset it anyway
+        [getDataOrStop setImage:[UIImage imageNamed:@"refreshEmblem.png"] forState:UIControlStateNormal]; // doesn't matter but reset it anyway
         [matchNearA setTitle:title forState:UIControlStateNormal];  // it's enabled not disabled
         getDataOrStop.hidden=YES;
         matchNearA.enabled=YES;
@@ -327,9 +419,9 @@
     
 }
 
+/*
 
-
--(void)pushMyDataToCloud{
+-(void)pushMyDataToCloud{   // no longer need to do lots of this....
     
     
     
@@ -338,8 +430,6 @@
             if(![parameters objectForKey:@"TimeOfLastAlert"]){
                 [parameters setObject:[NSDate dateWithTimeIntervalSinceNow:-600] forKey:@"TimeOfLastAlert"];
             }
-            
-            //  you might be using this to find people near you even when you are not logged in...don't repeated show error.
             
       //      NSLog(@"here f  %f",[[parameters objectForKey:@"TimeOfLastAlert"] timeIntervalSinceNow]);
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -379,13 +469,18 @@
             int recordID=[[parameters objectForKey:@"iCloudRecordID"] intValue];
             
       //      NSLog(@"here y %i",recordID);
+            
+            
+            
+            
+            
             if(recordID==0){
        //         NSLog(@"got a 0");
                 srandom(randomNumber);
                 randomNumber= abs( (int)random());
-                randomNumber=randomNumber%1000000;
-                if(randomNumber<100001)randomNumber=randomNumber+100001;
-                //  between 100,001 and 999,999
+                randomNumber=randomNumber%10000000;
+                if(randomNumber<1000001)randomNumber=randomNumber+1000001;
+                //  between 1,000,001 and 9,999,999
                 NSString *trialRecordIDName=[NSString stringWithFormat:@"%i0",randomNumber];
                 CKRecordID *trialRecordID=[[CKRecordID alloc] initWithRecordName:trialRecordIDName];
                 [publicDatabase fetchRecordWithID:trialRecordID completionHandler:^(CKRecord *fetchedRecord, NSError *error){
@@ -402,11 +497,12 @@
                         [self pushMyDataToCloud];// try a new random number for the trialRecordID
                     }else{
                         // NSLog(@"error in icloud 3745947");
-                        [self iCloudErrorMessage:@"There was an error (2) trying to post your Rides for other users to Match.  Please try again later."];
+                        [self iCloudErrorMessage:[NSString stringWithFormat: @"There was an error (2) trying to post your Rides for other users to Match.  Please try again later. (%@)",error]];
                     }
                 }];
                 return;  // will this work?
             }
+            
       //      NSLog(@"continuing after getting a valid recordID  %i",recordID);
             NSMutableArray *recordIDs=[[NSMutableArray alloc] initWithCapacity:5];
             for (int I=0;I<=5;I++){
@@ -425,8 +521,7 @@
                         [self iCloudErrorMessage:[NSString stringWithFormat:@"There was an iCloud resource issue (1) trying to post your Rides for other users to Match.  Please try again after %i seconds.",seconds]];
                     }else{
                      //   NSLog(@"error is %ld   %@",(long)error.code,error);
-                        
-                        [self iCloudErrorMessage:@"There was an error (1) trying to post your Rides for other users to Match.  Please try again later."];
+                        [self iCloudErrorMessage:[NSString stringWithFormat: @"There was an error (1) trying to post your Rides for other users to Match.  Please try again later. (%@)",error]];
                     }
                     
                 }else{
@@ -444,13 +539,31 @@
                     for(int I=1;I<=5;I++){
                         CKRecord *aRecord=[recordsByRecordID objectForKey:[recordIDs objectAtIndex:I]];
                         NSDictionary *aRide=[[parameters objectForKey:@"TheRides"] objectAtIndex:I-1];
-                        if(![aRide objectForKey:@"GeoA"]){
-                            if(aRecord)[theRecordsToDelete addObject:[recordIDs objectAtIndex:I]];
-                        }else{
-                            if(!aRecord){
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        //   delete this if you don't want it found?
+                        
+                        
+                        
+                        
+                        
+                        
+                  //      if(![aRide objectForKey:@"GeoA"]){
+                    //        if(aRecord)[theRecordsToDelete addObject:[recordIDs objectAtIndex:I]];
+                      //  }else{
+                        
+                        
+                        
+                        
+                           if(!aRecord){
                                 aRecord=[[CKRecord alloc] initWithRecordType:@"Rides" recordID:[recordIDs objectAtIndex:I]];
-                        //        NSLog(@"here 11112");
-                            }
+                                NSLog(@"here 11112");
+                           }
                             [aRecord setObject:[aRide objectForKey:@"ArriveEnd"] forKey:@"ArriveEnd"];
                             [aRecord setObject:[aRide objectForKey:@"ArriveStart"] forKey:@"ArriveStart"];
                             [aRecord setObject:[aRide objectForKey:@"LeaveEnd"] forKey:@"LeaveEnd"];
@@ -461,15 +574,21 @@
                             [aRecord setObject:[aRide objectForKey:@"GeoAlat"] forKey:@"GeoAlat"];
                             [aRecord setObject:[aRide objectForKey:@"GeoB"] forKey:@"GeoB"];
                             [aRecord setObject:[aRide objectForKey:@"GeoBlat"] forKey:@"GeoBlat"];
-                            [aRecord setObject:[NSNumber numberWithInt:[[[recordIDs objectAtIndex:I] recordName] intValue]] forKey:@"IDNumber"];
+                    
+                        [aRecord setObject:[NSNumber numberWithInt:[[[recordIDs objectAtIndex:I] recordName] intValue]] forKey:@"IDNumber"];
+                    
                             [aRecord setObject:[NSDate dateWithTimeIntervalSinceNow:0] forKey:@"TheDateLastAccessed"];  // an nsdate object
+                        [aRecord setObject:[fullDateFormat stringFromDate:[NSDate dateWithTimeIntervalSinceNow:0]] forKey:@"Title"];
+                  
                             CLLocation *home=[[CLLocation alloc] initWithLatitude:[[aRide objectForKey:@"GeoAlat"] doubleValue] longitude:[[aRide objectForKey:@"GeoA"] doubleValue]];
+                     
                             [aRecord setObject:home forKey:@"HomeLocation"];  // a CLLocation object
-                            
-                            
+                    
+                        
+                        NSLog(@"want to save these records:  %@",aRecord);
                             [theRecordsToSave addObject:aRecord];
-                       //     NSLog(@"want to save these records:  %@",aRecord);
-                        }
+                         NSLog(@"5");
+             //           }
                     }
                     if([theRecordsToDelete count] +[theRecordsToSave count]>0){
                 //        NSLog(@"and here is the complete set %@   and deleting these:  %@",theRecordsToSave,theRecordsToDelete);
@@ -492,7 +611,8 @@
                                     [self iCloudErrorMessage:[NSString stringWithFormat:@"There was an iCloud resource issue trying to post your Rides for other users to Match.  Please try again after %i seconds.",seconds]];
                                 }else{
                                //     NSLog(@"the error was  %@",operationError);
-                                    [self iCloudErrorMessage:@"There was an error trying to post your Rides for other users to Match.  Please try again later."];
+                                    [self iCloudErrorMessage:[NSString stringWithFormat: @"There was an error trying to post your Rides for other users to Match.  Please try again later. (%@)",operationError]];
+                                    
                                 }
                             }else{
                             //    NSLog(@"saved these records:  %@",savedRecords);
@@ -522,7 +642,7 @@
     
     
 }
-
+*/
 -(void)redrawScreen{
   
     locationA.hidden=![theSelectedRide objectForKey:@"GeoA"];
@@ -1857,6 +1977,9 @@
 }
 
 -(IBAction)changeSelectedRide:(id)sender{  // can be called with sender==nil
+    
+  //  NSLog(@"CHANGESELECTEDRIDE");
+    
     tapMatchForInfo.hidden=YES;
     
     [parameters setObject:[NSNumber numberWithLong:rideSelector.selectedSegmentIndex] forKey:@"RideSelected"];
@@ -1992,11 +2115,13 @@
         
         
         //  this is the entry to cloudkit:
-        
+        // send show match or send selectedride
         if([parameters objectForKey:@"Show Match"]){
-            [self downloadMatchData];
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"MatchProcedures" object:[parameters objectForKey:@"Show Match"]];
+            //  [self downloadMatchData];
         }else{
-            [self downloadData];
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"MatchProcedures" object:theSelectedRide];
+            //   [self downloadData];
         }
         
         
@@ -2215,8 +2340,6 @@
     [super viewDidLoad];
     
     
-    randomNumber=abs((int)[[[[UIDevice currentDevice] identifierForVendor] UUIDString] hash])%1000000;
-    
     
     UITapGestureRecognizer* tapRec = [[UITapGestureRecognizer alloc]
                                       initWithTarget:self action:@selector(didTapMap:)];
@@ -2227,6 +2350,8 @@
     
     dateFormat = [[NSDateFormatter alloc] init];
     [dateFormat setDateFormat:@"h:mm a"];
+    fullDateFormat = [[NSDateFormatter alloc] init];
+    [fullDateFormat setDateFormat:@"MMM dd, h:mm a"];
     
     requestFromAlert=NO;
     filterData.onTintColor=[UIColor colorWithRed:0 green:122/255. blue:1.0 alpha:1.0];
@@ -2249,6 +2374,13 @@
     myHome.title=@"Home";
     myWork.title=@"Work";
     myAnnotations=[[NSMutableArray alloc] init];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(ridesWereUpdated)
+                                                 name:@"RidesWereUpdated" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(returnWithMatches:)
+                                                 name:@"ReturnWithMatches"  object:nil];
     
     
     

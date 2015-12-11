@@ -9,6 +9,7 @@
 #import "SecondViewController.h"
 #import <CoreLocation/CoreLocation.h>
 #import "ChoicesViewController.h"
+//#import "CloudKitDatabase.h"
 
 @interface SecondViewController (){
     NSMutableArray *theRides;
@@ -84,7 +85,7 @@
     }
     
     if(sender || daysOfTheWeek==0)  // update info if it is changed or will change
-        [parameters setObject:[NSNumber numberWithBool:YES] forKey:@"UpdateInformation"];
+        [[parameters objectForKey:@"UpdateTheseRides"] addObject:[NSNumber numberWithLong:[rideSelector selectedSegmentIndex]]];
     if (daysOfTheWeek==0)daysOfTheWeek=31;
     [theSelectedRide setObject:[NSNumber numberWithInt:daysOfTheWeek] forKey:@"DaysOfTheWeek"];
     [self reDrawTheScreen];
@@ -106,7 +107,7 @@
         [theSelectedRide setObject:@"8:30 AM" forKey:@"ArriveStart"];
     if (![theSelectedRide objectForKey:@"ArriveEnd"])
         [theSelectedRide setObject:@"9:00 AM" forKey:@"ArriveEnd"];
-    [parameters setObject:[NSNumber numberWithBool:YES] forKey:@"UpdateInformation"];
+    [[parameters objectForKey:@"UpdateTheseRides"] addObject:[NSNumber numberWithLong:[rideSelector selectedSegmentIndex]]];
     [self reDrawTheScreen];
 }
 
@@ -126,7 +127,7 @@
         [theSelectedRide setObject:@"5:00 PM" forKey:@"LeaveStart"];
     if (![theSelectedRide objectForKey:@"LeaveEnd"])
         [theSelectedRide setObject:@"6:00 PM" forKey:@"LeaveEnd"];
-    [parameters setObject:[NSNumber numberWithBool:YES] forKey:@"UpdateInformation"];
+    [[parameters objectForKey:@"UpdateTheseRides"] addObject:[NSNumber numberWithLong:[rideSelector selectedSegmentIndex]]];
     [self reDrawTheScreen];
 }
 
@@ -136,8 +137,8 @@
     NSString *toString=[dateFormat stringFromDate:toTime.date];
     double timeBump=0.0;
     if([fromString rangeOfString:@"PM"].length>0 && [toString rangeOfString:@"AM"].length>0)timeBump=24*60*60;
- //   NSLog(@"12");
-    [parameters setObject:[NSNumber numberWithBool:YES] forKey:@"UpdateInformation"];
+    //   NSLog(@"12");
+    [[parameters objectForKey:@"UpdateTheseRides"] addObject:[NSNumber numberWithLong:[rideSelector selectedSegmentIndex]]];
     if([timeBetween.text isEqualToString:@"Leaving from 'Home'.\nArrive at 'Work' between the times:"]){
      //   NSLog(@"121");
         [theSelectedRide setObject:fromString forKey:@"ArriveStart"];
@@ -178,7 +179,16 @@
             if([sender isEqual:fromTime]){
                 [theSelectedRide setObject:[dateFormat stringFromDate:[fromTime.date dateByAddingTimeInterval:30*60]] forKey:@"LeaveEnd"];
             }else{
-                [theSelectedRide setObject:[dateFormat stringFromDate:[toTime.date dateByAddingTimeInterval:-30*60]] forKey:@"LeaveStart"];
+                int fromMinutes=[[fromString substringFromIndex:[fromString rangeOfString:@":"].location+1] intValue];
+                if([fromString intValue]==[toString intValue] && fromMinutes<59){
+                    if(fromMinutes<45){
+                        [theSelectedRide setObject:[dateFormat stringFromDate:[fromTime.date dateByAddingTimeInterval:15*60]] forKey:@"LeaveEnd"];
+                    }else{
+                        [theSelectedRide setObject:[dateFormat stringFromDate:[fromTime.date dateByAddingTimeInterval:(59-fromMinutes)*60]] forKey:@"LeaveEnd"];
+                    }
+                }else{
+                    [theSelectedRide setObject:[dateFormat stringFromDate:[toTime.date dateByAddingTimeInterval:-30*60]] forKey:@"LeaveStart"];
+                }
             }
         }else if([toTime.date timeIntervalSinceDate:fromTime.date]+timeBump>12*60*60){
             if([sender isEqual:fromTime]){
@@ -379,7 +389,7 @@
     
     if(![theSelectedRide objectForKey:@"MyCarOrYours"]){
         [theSelectedRide setObject:[NSNumber numberWithLong:2] forKey:@"MyCarOrYours"];
-        [parameters setObject:[NSNumber numberWithBool:YES] forKey:@"UpdateInformation"];
+        [[parameters objectForKey:@"UpdateTheseRides"] addObject:[NSNumber numberWithLong:[rideSelector selectedSegmentIndex]]];
     }
     [myCarOrYoursControl setSelectedSegmentIndex:[[theSelectedRide objectForKey:@"MyCarOrYours"] intValue]];
 
@@ -392,7 +402,7 @@
         daysOfTheWeek=[[theSelectedRide objectForKey:@"DaysOfTheWeek"] intValue];
     }else{
         [theSelectedRide setObject:[NSNumber numberWithLong:daysOfTheWeek] forKey:@"DaysOfTheWeek"];
-        [parameters setObject:[NSNumber numberWithBool:YES] forKey:@"UpdateInformation"];
+        [[parameters objectForKey:@"UpdateTheseRides"] addObject:[NSNumber numberWithLong:[rideSelector selectedSegmentIndex]]];
     }
     UIColor *upperCaseColor=[UIColor colorWithRed:0 green:122/255. blue:1.0 alpha:1];
     UIColor *lowerCaseColor=[UIColor colorWithRed:0 green:122/255. blue:1.0 alpha:.5];
@@ -495,6 +505,10 @@
     [mapIt removeAnnotation:myWork];
     [self showMap:nil];
     [self reDrawTheScreen];
+    [[parameters objectForKey:@"UpdateTheseRides"] addObject:[NSNumber numberWithLong:[rideSelector selectedSegmentIndex]]];
+  //  NSLog(@"updaterides ..................");
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"UpdateRides" object:nil];
+    
 }
 
 
@@ -514,16 +528,34 @@
 
 -(IBAction)myCarChanged:(id)sender{
     [theSelectedRide setObject:[NSNumber numberWithLong:myCarOrYoursControl.selectedSegmentIndex] forKey:@"MyCarOrYours"];
-    [parameters setObject:[NSNumber numberWithBool:YES] forKey:@"UpdateInformation"];
+    [[parameters objectForKey:@"UpdateTheseRides"] addObject:[NSNumber numberWithLong:[rideSelector selectedSegmentIndex]]];
 //    [self saveDefaults];
+}
+-(void)viewWillDisappear:(BOOL)animated{
+ //   NSLog(@"viewwilldissappear");
+    [super viewWillDisappear:animated];
+    
+    if([[parameters objectForKey:@"UpdateTheseRides"] count]>0){
+    //    NSLog(@"updaterides .....0");
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"UpdateRides" object:nil];
+    }
+    
+    
+}
+
+-(void)ridesWereUpdated{
+    if(self.view.superview){
+      //  NSLog(@"updating rides in My Info");
+        [self changeSelectedRide:nil];
+    }
 }
 
 -(IBAction)changeSelectedRide:(UISegmentedControl *)sender{
     [parameters setObject:[NSNumber numberWithLong:rideSelector.selectedSegmentIndex] forKey:@"RideSelected"];
   
  //   NSLog(@"Ride changed");
-    NSString *oldGeoA=[theSelectedRide objectForKey:@"GeoA"];
-    NSString *oldGeoB=[theSelectedRide objectForKey:@"GeoB"];
+//    NSString *oldGeoA=[theSelectedRide objectForKey:@"GeoA"];
+//    NSString *oldGeoB=[theSelectedRide objectForKey:@"GeoB"];
     
  //   NSLog(@"the oldGeos are  %@   %@",oldGeoA,oldGeoB);
     
@@ -554,23 +586,32 @@
        
        }
     
-    
+    [mapIt removeAnnotation:myWork];
     if ([theSelectedRide objectForKey:@"GeoB"]) {
         myWork.coordinate=CLLocationCoordinate2DMake([[theSelectedRide objectForKey:@"GeoBlat"] doubleValue], [[theSelectedRide objectForKey:@"GeoB"] doubleValue]);
-        if(!oldGeoB)[mapIt addAnnotation:myWork];
-    }else if(oldGeoB){
-        [mapIt removeAnnotation:myWork];
+//        if(!oldGeoB)
+            [mapIt addAnnotation:myWork];
+ //   }else if(oldGeoB){
+ //       [mapIt removeAnnotation:myWork];
     }
     
+    [mapIt removeAnnotation:myHome];
     if ([theSelectedRide objectForKey:@"GeoA"]) {
         myHome.coordinate=CLLocationCoordinate2DMake([[theSelectedRide objectForKey:@"GeoAlat"] doubleValue], [[theSelectedRide objectForKey:@"GeoA"] doubleValue]);
-        if(!oldGeoA)[mapIt addAnnotation:myHome];
-    }else if(oldGeoA){
-        [mapIt removeAnnotation:myHome];
+ //       if(!oldGeoA)
+            [mapIt addAnnotation:myHome];
+ //   }else if(oldGeoA){
+   //     [mapIt removeAnnotation:myHome];
+    }
+    
+    [self reDrawTheScreen];
+    
+    if([[parameters objectForKey:@"UpdateTheseRides"] count]>0){
+    //    NSLog(@"updaterides ............");
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"UpdateRides" object:nil];
     }
     
     
-    [self reDrawTheScreen];
 }
 
 -(void)delayedViewDidLoad{
@@ -627,6 +668,10 @@
     MKCoordinateRegion region = MKCoordinateRegionMakeWithDistance(coord, 1000, 1000);
     [mapIt setRegion:region];
     
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(ridesWereUpdated)
+                                                 name:@"RidesWereUpdated" object:nil];
 
  //   [self performSelector:@selector(delayedViewDidLoad) withObject:nil afterDelay:8.1];
 }
@@ -660,23 +705,25 @@
     
     if (!pinView)
         pinView = [[MKAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:@"pinView"];
-        
     
-        if([annotation.title isEqualToString:@"Home"])
-            pinView.image=[UIImage imageNamed:@"53-house white on black"];
-            
-            
-        ////    [[UIImage imageNamed:@"53-house blue.png"] drawAtPoint:CGPointMake(0,10)];//30)];
-    if([annotation.title isEqualToString:@"Work"])
+    
+    if([annotation.title isEqualToString:@"Home"]){
+        pinView.image=[UIImage imageNamed:@"53-house white on black"];
+      //  NSLog(@"Home - annotation title");
+    }
+    ////    [[UIImage imageNamed:@"53-house blue.png"] drawAtPoint:CGPointMake(0,10)];//30)];
+    if([annotation.title isEqualToString:@"Work"]){
         pinView.image=[UIImage imageNamed:@"177-building black on white"];
-        
-            
+      //  NSLog(@"Work - annotation title");
+    }
+    
+    
     pinView.centerOffset=CGPointMake(-2, -5);
-
-        
-        
+    
+    
+    
         pinView.canShowCallout = YES;
-        
+    
    //     NSLog(@"annotation --- %@   %@",annotation.title,annotation);
 
     
@@ -695,7 +742,9 @@
         
         if ([tapToSet.text isEqualToString: @"Tap map to set 'Home' location"]){
             myHome.coordinate=coord;
-            if(![theSelectedRide objectForKey:@"GeoA"]) [mapIt addAnnotation:myHome];
+            //         if(![theSelectedRide objectForKey:@"GeoA"])
+            [mapIt removeAnnotation:myHome];
+                [mapIt addAnnotation:myHome];
                 
             
             
@@ -706,14 +755,16 @@
         }else{
             myWork.coordinate=coord;
             myWork.title=@"Work";
-            if(![theSelectedRide objectForKey:@"GeoB"]) [mapIt addAnnotation:myWork];
+    //        if(![theSelectedRide objectForKey:@"GeoB"])
+                [mapIt removeAnnotation:myWork];
+                [mapIt addAnnotation:myWork];
             [theSelectedRide setObject:[NSNumber numberWithDouble:coord.longitude]forKey:@"GeoB"];
             [theSelectedRide setObject:[NSNumber numberWithDouble:coord.latitude]forKey:@"GeoBlat"];
             showWork.hidden=NO;
      //       [self performSelector:@selector(delayAnnotationWork) withObject:nil afterDelay:0.5f];
         }
         tapToSet.hidden=YES;
-        [parameters setObject:[NSNumber numberWithBool:YES] forKey:@"UpdateInformation"];
+        [[parameters objectForKey:@"UpdateTheseRides"] addObject:[NSNumber numberWithLong:[rideSelector selectedSegmentIndex]]];
         
         
         
@@ -727,5 +778,8 @@
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
+
+
+
 
 @end

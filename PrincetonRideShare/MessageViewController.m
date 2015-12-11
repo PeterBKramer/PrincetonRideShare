@@ -8,12 +8,21 @@
 
 #import "MessageViewController.h"
 #import "ChoicesViewController.h"
+//#import "messageViewer.h"
 
 @interface MessageViewController (){
     
+    NSMutableArray *myMessagePackets;
     NSMutableArray *myMessages;
     NSMutableDictionary *parameters;
     NSDateFormatter *dateFormat;
+    BOOL groupTheMessages;
+    NSNumber *theRecordID;
+    BOOL requestGetMessage;
+    NSDate *now;
+    NSDateFormatter *fullDateFormat;
+    long rowToDelete;
+    NSString *status;
 }
 
 @end
@@ -31,47 +40,300 @@
 
 -(void)getParameters:(NSMutableDictionary *)theParameters{
     parameters=theParameters;
+    myMessagePackets=[[NSMutableArray alloc] init];
+    groupTheMessages=YES;
+    myMessages=[parameters objectForKey:@"MyMessages"];
+    if([myMessages count]==0)[myMessages addObject:@"No messages"];//this shouldn't be necessary
+    [self constructMyMessagePackets];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(returnFromCloud:)
+                                                 name:@"ReturnFromCloud" object:nil];
 }
 
 -(IBAction)showMatch:(id)sender{
-    [parameters setObject:[[theMessage.text substringFromIndex:9] substringToIndex:8] forKey:@"Show Match"];
+    
+    
+    int toNumber=[[theMessage.text substringFromIndex:[theMessage.text rangeOfString:@":"].location+1] intValue];
+    NSString *toRideLetter=[[theMessage.text substringFromIndex:[theMessage.text rangeOfString:@"-"].location+1] substringToIndex:1];
+    [parameters setObject:[NSString stringWithFormat:@"%i-%@",toNumber,toRideLetter] forKey:@"Show Match"];
+    
+    NSString *fromText=[theMessage.text substringFromIndex:[theMessage.text rangeOfString:@"From:"].location];
+    NSString *rideLetter=[[fromText substringFromIndex:[fromText rangeOfString:@"-"].location+1] substringToIndex:1];
+    long rideNumber=[@"ABCDE" rangeOfString:rideLetter].location;
+    
+    [parameters setObject:[NSNumber numberWithLong:rideNumber] forKey:@"RideSelected"];
+     
     self.tabBarController.selectedIndex=2;
+}
+
+-(IBAction)sendButton:(id)sender{
+    
+    if(![UIApplication sharedApplication].networkActivityIndicatorVisible){
+        
+        
+        
+        //disable the keyboard somehow
+        
+        
+        
+        
+        //"Send to 123456-C:  blah blah blah    -
+        //     so on the other end it is 'received from [my id number-mt ride number]
+        if(theMessage.text.length>8 && [[parameters objectForKey:@"iCloudRecordID"] intValue]!=0 && [theMessage.text containsString:@":"] && [theMessage.text containsString:@"-"]&& [theMessage.text containsString:@"From:"]&& [theMessage.text containsString:@"  \n"]   ){
+            
+            //also need to test the existance of a - after from:
+            
+            NSString *stringFromFrom=[theMessage.text substringFromIndex:[theMessage.text rangeOfString:@"From:"].location];
+            long locationOfColon=[theMessage.text rangeOfString:@":"].location+1;
+            if(locationOfColon>9)locationOfColon=0;
+            int IDNumber=[[theMessage.text substringFromIndex:locationOfColon] intValue];
+            if(locationOfColon!=0 && IDNumber>99999 && IDNumber<10000000 && [stringFromFrom containsString:@"-"] ){
+                
+                //   NSLog(@"here ffff0");
+                
+                
+                
+                
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"MessagesProcedures" object:theMessage.text];
+                
+                [self cancelMessage:@"GoingToiCloud"];
+            
+            }
+            
+            
+            
+            
+            
+        }   //    entered a \n,  could be icloud error here.  or else do this above?
+        
+        
+        //    NSLog(@"here t");
+        
+        
+        
+    }
+}
+
+
+-(void)constructMyMessagePackets{
+ //   NSLog(@"the packets were %@",myMessagePackets);
+    [myMessagePackets removeAllObjects];
+    
+ // can no longer happen:
+    if ([myMessages count]==0)
+        [myMessages addObject:@"No messages"];
+    
+    if([[myMessages objectAtIndex:0] isKindOfClass:[NSString class]]){
+        [myMessagePackets addObject:@"No messages"];
+        return;
+    }
+    
+            
+    NSMutableArray *messagePacketIDs=[[NSMutableArray alloc] init];
+    for(long I=[myMessages count]-1;I>=0;I--){
+        
+        NSDictionary *aMessage=[myMessages objectAtIndex:I];
+        NSNumber *newIDNumber=[aMessage objectForKey:@"ToNumber"];
+        if([[aMessage objectForKey:@"ToNumber"] isEqualToNumber:[parameters objectForKey:@"iCloudRecordID"]])newIDNumber=[aMessage objectForKey:@"From"];
+        
+        if(!groupTheMessages && [newIDNumber isEqualToNumber:theRecordID]){
+            [myMessagePackets insertObject:aMessage atIndex:0];  //    add at top not bottom
+        }else if(groupTheMessages && ![messagePacketIDs containsObject:newIDNumber]){
+            [messagePacketIDs addObject:newIDNumber];
+            [myMessagePackets insertObject:aMessage atIndex:0];  //    add at top not bottom
+        }
+    }
+    
+    if([myMessagePackets count]==0)
+        [myMessagePackets addObject:@"No messages"];
 }
 
 
 
 
 -(IBAction)cancelMessage:(id)sender{
-    [theMessage resignFirstResponder];
-    theMessage.hidden=YES;
-    cancelMessage.hidden=YES;
-    showMatch.hidden=YES;
-    tapEntry.hidden=NO;
-    deleteEntries.hidden=NO;
-    infoButton.hidden=NO;
-    theTable.frame=CGRectMake(20,60,280,330);
+   /*
+    if(![sender isEqual:@"ReturnFromiCloud"]){
+        [theMessage resignFirstResponder];
+        theMessage.hidden=YES;
+        cancelMessage.hidden=YES;
+        showMatch.hidden=YES;
+        buttonBackground.hidden=YES;
+        sendButton.hidden=YES;
+        showKeyboard.hidden=YES;
+    }
     
-    if([[UIScreen mainScreen] bounds].size.height>480)theTable.frame=CGRectMake(20,60,280,450);
+    if(![sender isEqual:@"GoingToiCloud"]){  // not done immediately
+        [parameters removeObjectForKey:@"Match ID"];
+        if(requestGetMessage)[self getMessages:nil];
+        
+        infoButton.hidden=NO;
+        tapEntry.hidden=NO;
+        alertsLabel.hidden=NO;
+        refreshMessages.hidden=NO;
+        subscriptionsSwitch.hidden=NO;
+        deleteEntries.hidden=NO;
+        
+    }
+    */
+    if([sender isEqual:@"GoingToiCloud"]){
+        status=@"Sending";
+ //   }else if ([sender isEqual:@"ReturnFromiCloud"]){
+   //     status=@"Regular";
+    }else{
+        status=@"Regular"; //   from the cancel button
+    }
     
+    [self redoTheScreen];
     [theTable reloadData];
-    [theTable scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:[myMessages count]-1 inSection:0] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
-    showKeyboard.hidden=YES;
+    [theTable scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:[myMessagePackets count]-1 inSection:0] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+    
+    
 }
+
+-(void)redoTheScreen{
+    
+  //  NSLog(@"the status is ........%@",status);
+    [self constructMyMessagePackets];
+   
+    
+    if([status isEqualToString:@"Sending"]){
+        [theMessage resignFirstResponder];
+        theMessage.hidden=YES;
+        cancelMessage.hidden=YES;
+        showMatch.hidden=YES;
+        buttonBackground.hidden=YES;
+        sendButton.hidden=YES;
+        showKeyboard.hidden=YES;
+    }else if([status isEqualToString:@"Regular"]){
+        [theMessage resignFirstResponder];
+        theMessage.hidden=YES;
+        cancelMessage.hidden=YES;
+        showMatch.hidden=YES;
+        buttonBackground.hidden=YES;
+        sendButton.hidden=YES;
+        showKeyboard.hidden=YES;
+        [parameters removeObjectForKey:@"Match ID"];
+        if(requestGetMessage)[self getMessages:nil];
+        infoButton.hidden=NO;
+        tapEntry.hidden=NO;
+        alertsLabel.hidden=NO;
+        refreshMessages.hidden=NO;
+        subscriptionsSwitch.hidden=NO;
+        deleteEntries.hidden=NO;
+    }else if([status isEqualToString:@"Compose"]){
+        theMessage.hidden=NO;//
+        [theMessage becomeFirstResponder];
+        cancelMessage.hidden=NO;//
+        showMatch.hidden=NO;//
+        buttonBackground.hidden=NO;//
+        sendButton.hidden=NO;//
+        tapEntry.hidden=YES;
+        deleteEntries.hidden=YES;
+        infoButton.hidden=YES;
+        alertsLabel.hidden=YES;
+        refreshMessages.hidden=YES;
+        messagesFromTo.hidden=YES;
+        messagesToFromBackground.hidden=YES;
+        closeButton.hidden=YES;
+        subscriptionsSwitch.hidden=YES;
+    }else if ([status isEqualToString:@"DoNothing"]){
+        
+    }else if ([status isEqualToString:@"FirstTime"]){
+        if(theMessage.hidden){   //   don't do these if sending a message
+            tapEntry.hidden=NO;
+            refreshMessages.hidden=NO;
+            alertsLabel.hidden=NO;
+            subscriptionsSwitch.hidden=NO;
+            infoButton.hidden=NO;
+        }
+        deleteEntries.hidden=[[myMessagePackets objectAtIndex:0] isEqual:@"No messages"];
+        disclaimerLabel.hidden=YES;
+        showKeyboard.hidden=YES;
+        [showKeyboard setTitle:@"Show keyboard" forState:UIControlStateNormal];
+    }else if ([status isEqualToString:@"Compose1"]){
+        showKeyboard.hidden=NO;
+        theMessage.hidden=NO;
+        cancelMessage.hidden=NO;
+        showMatch.hidden=NO;
+        buttonBackground.hidden=NO;
+        sendButton.hidden=NO;
+    }else if ([status isEqualToString:@"Delete"]){
+        tapEntry.hidden=YES;
+        closeButton.hidden=YES;
+    }else if ([status isEqualToString:@"EndDelete"]){
+        tapEntry.hidden=NO;
+        closeButton.hidden=NO;
+        status=@"DoNothing";
+    }
+    
+    int topBorder=30;
+    if(theMessage.hidden){
+        if(groupTheMessages)topBorder=30;
+        theTable.frame=CGRectMake(10,100+topBorder,300,[[UIScreen mainScreen] bounds].size.height -160-topBorder);
+    }
+    
+    
+    
+    deleteEntries.hidden=refreshMessages.hidden;
+    if(groupTheMessages){
+        tapEntry.text=@"Tap Match\nto open";
+        closeButton.hidden=YES;
+        if([myMessagePackets count]>0){
+            if([[myMessagePackets objectAtIndex:0] isEqual:@"No messages"]){
+                tapEntry.text=@"You can only send\nmessages to a match";
+                deleteEntries.hidden=YES;
+                messagesFromTo.hidden=YES;
+                messagesToFromBackground.hidden=YES;
+            }else{
+                messagesFromTo.text=[NSString stringWithFormat:@"Messages grouped by Match:"];
+                messagesFromTo.hidden=NO;
+                messagesToFromBackground.hidden=NO;
+            }
+        }
+    }else{
+        tapEntry.text=@"Tap Message\nto respond";
+        messagesFromTo.hidden=!theMessage.hidden;
+        messagesToFromBackground.hidden=!theMessage.hidden;
+        closeButton.hidden=tapEntry.hidden;
+        if([myMessagePackets count]>0)
+            if([[myMessagePackets objectAtIndex:0] isEqual:@"No messages"]){
+                tapEntry.text=@"No entries\nfor this Match";
+                deleteEntries.hidden=YES;
+                
+                //don't sho these if keyboard is showing
+                tapEntry.hidden=!cancelMessage.hidden;
+                closeButton.hidden=!cancelMessage.hidden;
+            }
+    }
+    
+    
+    
+    
+}
+
+
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    theTable.frame=CGRectMake(20,60,280,330);
-    if([[UIScreen mainScreen] bounds].size.height>480)theTable.frame=CGRectMake(20,60,280,450);
     dateFormat=[[NSDateFormatter alloc] init];
-    [dateFormat setDateFormat:@"MMM dd, h:mm a"];
-  
+    [dateFormat setDateFormat:@"MMM dd  h:mm a"];
+    fullDateFormat=[[NSDateFormatter alloc] init];
+    [fullDateFormat setDateFormat:@"MMM dd  h:mm:ss a"];
+    requestGetMessage=NO;
     
-    if(![parameters objectForKey:@"MyMessages"])
-        [parameters setObject:[[NSMutableArray alloc] init] forKey:@"MyMessages"];
-    myMessages=[parameters objectForKey:@"MyMessages"];
-    if([myMessages count]==0)[myMessages addObject:@"No messages"];
-
+    
+    
+    float heigntValue=[[UIScreen mainScreen] bounds].size.height -345    -30;
+    theMessage.frame=CGRectMake(45,30+ heigntValue, 250, 88);
+    sendButton.frame=CGRectMake(13, heigntValue,82, 30);
+    showMatch.frame=CGRectMake(110, heigntValue, 100, 30);
+    buttonBackground.frame=CGRectMake(10, heigntValue,300, 30);
+    cancelMessage.frame=CGRectMake(240, heigntValue, 59, 30);
+    
+    
     
  //test      [parameters removeObjectForKey:@"ReadAndAgreedTo"];
     
@@ -96,6 +358,8 @@
     if (shift<0)shift=0;
     containingView.frame=CGRectMake(([[UIScreen mainScreen] bounds].size.width-320)/2,shift, 320, 568);
     
+    
+  //  NSLog(@"viewDidLoad Message Controller");
     
     // Do any additional setup after loading the view.
 }
@@ -144,110 +408,8 @@
 
 -(BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text{
     
-    if([text isEqualToString:@"\n"] && ![UIApplication sharedApplication].networkActivityIndicatorVisible){
-        
-        
-        
-        //disable the keyboard somehow
-        
-        
-        
-        
-        //"Send to 123456-C:  blah blah blah    -
-        //     so on the other end it is 'received from [my id number-mt ride number] 
-        if(theMessage.text.length>8 && [[parameters objectForKey:@"iCloudRecordID"] intValue]!=0 && [theMessage.text containsString:@":"] && [theMessage.text containsString:@"-"]&& [theMessage.text containsString:@"From:"]&& [theMessage.text containsString:@"  \n"]   ){
-            
-            //also need to test the existance of a - after from:
-            
-            NSString *stringFromFrom=[theMessage.text substringFromIndex:[theMessage.text rangeOfString:@"From:"].location];
-            int IDNumber=[[theMessage.text substringFromIndex:8] intValue];
-            if(IDNumber>99999 && IDNumber<1000000 && [stringFromFrom containsString:@"-"] ){
-                
-             //   NSLog(@"here ffff0");
-                
-                    [[CKContainer defaultContainer] accountStatusWithCompletionHandler:^(CKAccountStatus accountStatus, NSError *error) {
-                        if (accountStatus == CKAccountStatusNoAccount) {
-                            [self iCloudErrorMessage:@"You must sign in to your iCloud account to send a message.\nOn the Home screen, launch the Settings App, tap \"iCloud\", and enter your Apple ID.  Then turn \"iCloud Drive\" on and allow this App to store data.\nIf you don't have an iCloud account, tap \"Create a new Apple ID\"." ];
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                [theMessage resignFirstResponder];
-                                showKeyboard.hidden=NO;
-                            });
-                            
-                        }else{
-                            [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
-                            CKContainer *defaultContainer=[CKContainer defaultContainer];
-                            CKDatabase *publicDatabase=[defaultContainer publicCloudDatabase];
-                            CKRecord *aMessage=[[CKRecord alloc] initWithRecordType:@"Messages"];
-                            
-                            
-                        //    NSLog(@"here ffff1");
-                            
-                            [aMessage setObject:[parameters objectForKey:@"iCloudRecordID"]  forKey:@"From"];
-                            [aMessage setObject:[NSNumber numberWithInt:[[theMessage.text substringFromIndex:[theMessage.text rangeOfString:@":"].location+1] intValue]]  forKey:@"ToNumber"];
-                         //   NSLog(@"here ffff");
-                            [aMessage setObject:[[theMessage.text substringFromIndex:[theMessage.text rangeOfString:@"-"].location+1] substringToIndex:1] forKey:@"ToRide"];
-                            [aMessage setObject:[[stringFromFrom substringFromIndex:
-                                [stringFromFrom rangeOfString:@"-"].location+1] substringToIndex:1]forKey:@"FromRide"];
-                            [aMessage setObject:[theMessage.text substringFromIndex:[theMessage.text rangeOfString:@"  \n"].location+3] forKey:@"Message"];
-                            
-                            [aMessage setObject:[NSNumber numberWithDouble: [NSDate timeIntervalSinceReferenceDate]]  forKey:@"DateD"];
-                           
-                            
-                            
-                    //        NSLog(@"here ffff2");
-                            [publicDatabase saveRecord:aMessage completionHandler: ^(CKRecord *record, NSError *error){
-                                if(error){
-                                    if(error.code==CKErrorPartialFailure)error=nil;
-                                }
-                                if(error){
-                                    int seconds=0;
-                                    if(error.code==CKErrorServiceUnavailable || error.code==CKErrorRequestRateLimited)
-                                        seconds=[[[error userInfo] objectForKey:CKErrorRetryAfterKey] intValue];
-                                    NSString *errorMessage;
-                                    if(seconds>0){
-                                        errorMessage=[NSString stringWithFormat:@"There was an iCloud resource issue trying to send your message.  Please try again after %i seconds.",seconds];
-                                    }else{
-                                        errorMessage=[NSString stringWithFormat: @"There was an error trying to send your message.  Please try again later. %@   %ld",error,(long)error.code];
-                                    }
-                                    dispatch_async(dispatch_get_main_queue(), ^{
-                                        [theMessage resignFirstResponder];
-                                        showKeyboard.hidden=NO;
-                                    });
-                                    
-                                    [self iCloudErrorMessage:errorMessage];
-                                    
-                                }else{
-                                    //  change "Send to 123456-C..." to "To 123456-C
-                                    
-                                    dispatch_async(dispatch_get_main_queue(), ^{
-                                        [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-                                        
-                                        NSDictionary *thisMessage=[[NSDictionary alloc] initWithObjectsAndKeys:[aMessage objectForKey:@"From"],@"From",[aMessage objectForKey:@"ToNumber"],@"ToNumber",[aMessage objectForKey:@"ToRide"],@"ToRide",[aMessage objectForKey:@"FromRide"],@"FromRide",[aMessage objectForKey:@"Message"],@"Message",[aMessage objectForKey:@"DateD"],@"DateD",[[NSMutableString alloc] initWithString:@"No"],@"Read",nil];
-                                        [myMessages addObject:thisMessage];
-                                        if([[myMessages objectAtIndex:0] isEqual:@"No messages"])[myMessages removeObjectAtIndex:0];
-                                        [self cancelMessage:nil];
-                                        [theMessage setText:@""];
-                                    });
-                                }
-                            }];
-                            
-                         
-                        }
-                    }];
-                
-            }
-            
-
-            
-                
-            
-        }   //    entered a \n,  could be icloud error here.  or else do this above?
- 
-        
-    //    NSLog(@"here t");
-        return NO;
-        
-    }else if(range.location<[theMessage.text rangeOfString:@"  \n"].location+3 ){//   theMessage.text.length-range.length<38){
+    
+    if(range.location<[theMessage.text rangeOfString:@"  \n"].location+3 ){//   theMessage.text.length-range.length<38){
         
         //theMessage.text=[theMessage.text substringToIndex:38];
      //   NSLog(@"here s");
@@ -259,336 +421,151 @@
     }
 }
 
+
 -(IBAction)getMessages:(id)sender{
-    
-    
+ 
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(newNotificationArrived) object:nil];
+    requestGetMessage=NO;
     //  download any new messages, save them, clear the record and resave, then reload the table.
-    
-    
+ 
+ 
  //   NSLog(@"getting messages");
  //   [self cancelMessage:nil];
-    
+ 
     if([[parameters objectForKey:@"iCloudRecordID"] intValue]!=0){
-        [[CKContainer defaultContainer] accountStatusWithCompletionHandler:^(CKAccountStatus accountStatus, NSError *error) {
-            if (accountStatus == CKAccountStatusNoAccount) {
-              //  NSLog(@"error 11111");
-                
-             //   NSLog(@"zzz here mesaages");
-                [self iCloudErrorMessage:@"You must sign in to your iCloud account to send or receive any messages.\nOn the Home screen, launch the Settings App, tap \"iCloud\", and enter your Apple ID. Then turn \"iCloud Drive\" on and allow this App to store data.\nIf you don't have an iCloud account, tap \"Create a new Apple ID\"." ];
-            }else{
-                [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
-                CKContainer *defaultContainer=[CKContainer defaultContainer];
-                CKDatabase *publicDatabase=[defaultContainer publicCloudDatabase];
-                
-                
-                
-                
-                NSPredicate *predicate=[NSPredicate predicateWithFormat:@"ToNumber == %i",[[parameters objectForKey:@"iCloudRecordID"] intValue] ];
-                
-                CKQuery *query=[[CKQuery alloc] initWithRecordType:@"Messages" predicate:predicate];
-                query.sortDescriptors =[NSArray arrayWithObject:[[NSSortDescriptor alloc] initWithKey:@"DateD" ascending:YES]];
-                [publicDatabase performQuery:query inZoneWithID:nil completionHandler:
-                 ^(NSArray *results, NSError *error){
-                  //   NSLog(@"messages delibered the following number: %lu",(unsigned long)[results count]);
-                     if(error){
-                         if(error.code==CKErrorPartialFailure)error=nil;
-                       //  NSLog(@"the error is %@",error);
-                     }
-                     if(error){
-                         int seconds=0;
-                         if(error.code==CKErrorServiceUnavailable || error.code==CKErrorRequestRateLimited)
-                             seconds=[[[error userInfo] objectForKey:CKErrorRetryAfterKey] intValue];
-                         if(seconds>0){
-                             [self iCloudErrorMessage:[NSString stringWithFormat:@"There was an iCloud resource issue trying to get your messages.  Please try again after %i seconds.",seconds]];
-                         }else{
-                           //  NSLog(@"error is %ld   %@",(long)error.code,error);
-                             
-                             [self iCloudErrorMessage:@"There was an error trying to get your messages.  Please try again later."];
-                         }
-                         // return ;
-                     }else{
-                         if([results count]>0){  //    scanned for messages and got these.
-                        //     NSLog(@"getting this result  %@",results);
-                             NSMutableArray *theRecordIDs=[[NSMutableArray alloc] initWithCapacity:[results count]];
-                             NSMutableArray *newMessages=[[NSMutableArray alloc] initWithCapacity:[results count]];
-                             for (int I=0;I<[results count]; I++){
-                                 CKRecord *aMessage=[results objectAtIndex:I];
-                                 
-                                 // check to see if aRecord has your ID on it, if so proceed to save an nsdictionary in messages and delete it in cloudkit.  otherwise, pass on the enxt porcedure.
-                                 NSDictionary *aMessageToDownload=[NSDictionary dictionaryWithObjectsAndKeys:[aMessage objectForKey:@"ToNumber"] ,@"ToNumber",[aMessage objectForKey:@"ToRide"] ,@"ToRide",[aMessage objectForKey:@"FromRide"] ,@"FromRide",[aMessage objectForKey:@"From"] ,@"From",[aMessage objectForKey:@"Message"] ,@"Message",[aMessage objectForKey:@"DateD"] ,@"DateD",[[NSMutableString alloc] initWithString:@"Just downloaded"],@"Read", nil];
-                           //      NSLog(@"the message is --- %@",aMessageToDownload);
-                                 [newMessages addObject:aMessageToDownload];
-                                 [theRecordIDs addObject:aMessage.recordID];
-                             }
-                             
-                        //     NSLog(@"messages to delete  %@",theRecordIDs);
-                             
-                             CKModifyRecordsOperation *modifyRecords= [[CKModifyRecordsOperation alloc] initWithRecordsToSave:nil recordIDsToDelete:theRecordIDs];
-                             modifyRecords.modifyRecordsCompletionBlock=^(NSArray * savedRecords, NSArray * deletedRecordIDs, NSError * operationError){
-                                 if(operationError){
-                                     if(operationError.code==CKErrorPartialFailure){
-                                       //  NSLog(@"a partial error?????    %@",operationError);
-                                         operationError=nil;
-                                     }
-                                 }
-                                 if(operationError){
-                                     int seconds=0;
-                                     if(operationError.code==CKErrorServiceUnavailable || operationError.code==CKErrorRequestRateLimited)
-                                         seconds=[[[operationError userInfo] objectForKey:CKErrorRetryAfterKey] intValue];
-                                     if(seconds>0){
-                                         [self iCloudErrorMessage:[NSString stringWithFormat:@"There was an iCloud resource issue trying to retrieve and then delete your retrieved messages from the server.  Please try again after %i seconds.",seconds]];
-                                     }else{
-                                      //   NSLog(@"the error was  %@",operationError);
-                                         [self iCloudErrorMessage:@"There was an error trying to retrieve and then delete your retrieved messages from the server.  Please try again later."];
-                                     }
-                                 }else{
-                                  //   NSLog(@"deleted these records:  %@",deletedRecordIDs);
-                                     [myMessages addObjectsFromArray:newMessages];
-                                     
-                                     [self issueAlertResetBadge:[newMessages count]];
-                                     
-                                    
-                                 }
-                             };
-                             [publicDatabase addOperation:modifyRecords];
-                         }else{  // no messages for this device - no need to CKModifyBadgeOperation
-                          //   NSLog(@"here 33333");
-                             [self issueAlertResetBadge:0];
-                             [self resetTheBadges];  // also sets the table to last entry...
-                         }
-                         
-                     }
-                 }];
-                
-                
-                
-                //background search for remaining from messages and reset the value if read
-                NSPredicate *predicate1=[NSPredicate predicateWithFormat:@"From == %i",[[parameters objectForKey:@"iCloudRecordID"] intValue] ];
-                
-                CKQuery *query1=[[CKQuery alloc] initWithRecordType:@"Messages" predicate:predicate1];
-                [publicDatabase performQuery:query1 inZoneWithID:nil completionHandler:
-                 ^(NSArray *results, NSError *error){
-                     
-             //        NSLog(@"here 45372");
-                     if(error){
-                         if(error.code==CKErrorPartialFailure)error=nil;
-                     }
-                     if(error){
-                         dispatch_async(dispatch_get_main_queue(), ^{
-                         });
-                     }else{
-                         NSMutableArray *myFromDates=[[NSMutableArray alloc] initWithCapacity:[results count]];
-                         for(int I=0;I<[results count];I++){
-                             if(
-                                //   in the predicate.....[[[results objectAtIndex:I ] objectForKey:@"From"] isEqualToNumber:[parameters objectForKey:@"iCloudRecordID"]] &&// from this device
-                                [[results objectAtIndex:I] objectForKey:@"DateD"]){
-                                 [myFromDates addObject:[[results objectAtIndex:I] objectForKey:@"DateD"]];
-                             }
-                         }
-                     //    NSLog(@"the dates are %@",myFromDates);
-                         for(int I=0;I<[myMessages count];I++){  // mark the message as 'read'
-                           //  NSLog(@"the message is   %@",[myMessages objectAtIndex:I] );
-                             if([[myMessages objectAtIndex:I] isKindOfClass:[NSDictionary class]]){
-                               //  NSLog(@"doing comarison   %@  %@",[[myMessages objectAtIndex:I] objectForKey:@"DateD"],[[myMessages objectAtIndex:I] objectForKey:@"Read"]);
-                                 if(![[[myMessages objectAtIndex:I] objectForKey:@"Read"] isEqualToString:@"Yes"] && ![[[myMessages objectAtIndex:I] objectForKey:@"Read"] isEqualToString:@"Just downloaded"] )
-                                     if(![myFromDates containsObject: [[myMessages objectAtIndex:I] objectForKey:@"DateD"]] ){
-                                    //     NSLog(@"changing to yes---%@-",[[myMessages objectAtIndex:I] objectForKey:@"Read"]);
-                                         [[[myMessages objectAtIndex:I] objectForKey:@"Read"] setString:@"Yes"];
-                                     }
-                             }
-                         }
-                         
-                         dispatch_async(dispatch_get_main_queue(), ^{
-                             [theTable reloadData];
-                            });
-                     }
-                 }];
-                
-                
-                
-            }
-        }];
+        
+      //  NSLog(@"get messages");
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"MessagesProcedures" object:@"GetMessages"];
+        
+        
+        
     }
 }
 
--(void)issueAlertResetBadge:(long)newMessageCount{
-    CKContainer *defaultContainer=[CKContainer defaultContainer];
+         
+
+-(void)resetTheTable{
+   //   NSLog(@"reset the table");
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    status=@"DoNothing";
+    [self redoTheScreen];
+    [theTable reloadData];
+    [theTable scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:[myMessagePackets count]-1 inSection:0] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+}
+
+
+-(void)refreshNotificationsIssueAlertIf:(BOOL)issueAlert{
     
-    NSMutableArray *array = [NSMutableArray array];
-    NSMutableArray *arrayOthers = [NSMutableArray array];
-    __block NSString *message=@"";
-    CKFetchNotificationChangesOperation *operation = [[CKFetchNotificationChangesOperation alloc] initWithPreviousServerChangeToken:nil];
-    operation.notificationChangedBlock = ^(CKNotification *notification) {
-        
-        if(notification.notificationType==1){
-            if([notification.alertLocalizationArgs count]>0){
-                if([[notification.alertLocalizationArgs objectAtIndex:1] intValue] == [[parameters objectForKey:@"iCloudRecordID"] intValue]){
-                    [array addObject:notification.notificationID];
-                }else{
-                    [arrayOthers addObject:notification.notificationID];
-                    if(![[parameters objectForKey:@"Previous Notifications"] containsObject:notification.notificationID]){
-                        message=[message stringByAppendingFormat:@"\nDevice %@",[[notification alertLocalizationArgs] objectAtIndex:1]];
-                    }
-                }
-            }
-        }
-     //   NSLog(@"Got a notification   %@",notification);
-    };
-    operation.completionBlock = ^(){
-        CKMarkNotificationsReadOperation *op = [[CKMarkNotificationsReadOperation alloc] initWithNotificationIDsToMarkRead:array];
-        op.markNotificationsReadCompletionBlock=^(NSArray *iDsRead, NSError *operationError){
-          //  NSLog(@"here is what we did....%@   and the error was -%@-",iDsRead,operationError);
-            long numberOfRemainingNotifications=[arrayOthers count];
-            // issue alerts here based on
-            //     1) newMessages count ==0 or not
-            //     2) objects in arrayOthers not being in parameters objectfor key Not New Notifications
-            //  then reset not new notifications to arrayOthers
-            
-            NSString *title;
-            
-       //     NSLog(@"the two arrays are \n%@     and   \n%@",arrayOthers,[parameters objectForKey:@"Previous Notifications"]);
-            [parameters setObject:arrayOthers forKey:@"Previous Notifications"];
-            if(newMessageCount>0 && ![message isEqualToString:@""]){
-                title=@"Messages For Other Devices";
-                message =[@"You have other devices logged into the same iCloud Account.  In addition to new messages for this device, there are new messages for:\n" stringByAppendingString:message];
-            }else if(![message isEqualToString:@""]){
-                title=@"Messages For Other Devices";
-                message =[@"You have other devices logged into the same iCloud Account.  There are no new messages for this device but there are new messages for:\n" stringByAppendingString:message];
-            }else if(newMessageCount==0 && [[self tabBarItem] badgeValue]>0){   // only if there is a badge....
-                title=@"No New Messages";
-                message =@"You have other devices logged into the same iCloud Account.  There are no new messages for this device and your other devices have retrieved their new messages.";
-            }
-            if(title){
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    UIAlertController* alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
-                    UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {}];
-                    [alert addAction:defaultAction];
-                    [self presentViewController:alert animated:YES completion:nil];
-                });
-            }
-            CKModifyBadgeOperation *resetBadge=[[CKModifyBadgeOperation alloc] initWithBadgeValue:numberOfRemainingNotifications];
-          //  NSLog(@"reset badge to %li",numberOfRemainingNotifications);
-            resetBadge.modifyBadgeCompletionBlock=^(NSError *error){
-                if (error) {
-          //          NSLog(@"Error resetting badge: %@",error);
-                }else {
-            //        NSLog(@"reset badge to %li  confirmed",numberOfRemainingNotifications);
-                }
-                [self resetTheBadges];
-            };
-            [defaultContainer addOperation:resetBadge];
-        } ;
-        //  [op start];
-        [defaultContainer addOperation:op];
-   //     NSLog(@"marked them as read");
-    };
-    [defaultContainer addOperation:operation];
-    //                                     [operation start];
+    
+    
     
     
 }
 
+-(void)resetTheBadge{  // best to do this only after a recent getMessages but not so bad if not
 
-
--(void)resetTheBadges{
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-        [theTable reloadData];
-        [theTable scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:[myMessages count]-1 inSection:0] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
-        
-        
-        [[self tabBarItem] setBadgeValue:nil];
-        
-        
-        //??????
-        [[UIApplication sharedApplication] cancelAllLocalNotifications];
-        
-        
-        [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0];
-  //      NSLog(@"here 777");
-    });
-}
-
--(void)viewWillAppearStuff{  // can be called by app delegate
+    //   want to set the badge to the number of messages that have not yet been read and are labelled 'just downloaded" - want to do the same to the app icon badge.
     
-    for(int I=0;I<[myMessages count];I++){  // mark the message as 'read' if 'Just downloaded'
+    long numberOfMessages=0;
+    for(int I=0;I<[myMessages count];I++){
         if([[myMessages objectAtIndex:I] isKindOfClass:[NSDictionary class]]){
             if([[[myMessages objectAtIndex:I] objectForKey:@"Read"] isEqualToString:@"Just downloaded"])
-                [[[myMessages objectAtIndex:I] objectForKey:@"Read"] setString:@"Yes"];
+                numberOfMessages++;
         }
     }
+    [[UIApplication sharedApplication] setApplicationIconBadgeNumber:numberOfMessages];
+    if(numberOfMessages==0){
+        [[self tabBarItem] setBadgeValue:nil ];
+    }else{
+        [[self tabBarItem] setBadgeValue:[NSString stringWithFormat:@"%li",numberOfMessages] ];
+    }
+//    CKModifyBadgeOperation *resetBadge=[[CKModifyBadgeOperation alloc] initWithBadgeValue:numberOfMessages];
+//    [[CKContainer defaultContainer] addOperation:resetBadge];
     
+    
+  
+    
+    
+}
+
+-(void)callNewNotificationArrivedAfterDelay{ // can be called by app delegate
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    [self performSelector:@selector(newNotificationArrived) withObject:nil afterDelay:2.0f];
+}
+
+
+-(void)newNotificationArrived{
+    if (refreshMessages.hidden ){  // composing a message to send
+        requestGetMessage=YES;
+    }else{
+     //   NSLog(@"E");
+        [self getMessages:nil];
+    }
+}
+
+
+-(void)viewWillAppearStuff{  // can be called by app delegate
     
     //   moved stuff to end from here
     
     //  [theMessage becomeFirstResponder];
-    [theTable setDelegate:self];
-    [theTable setDataSource:self];
-    [theMessage setDelegate:self];
-    
-    
-    float shift=([[UIScreen mainScreen] bounds].size.height-568)/2;
-    if (shift<0)shift=0;
-    containingView.frame=CGRectMake(([[UIScreen mainScreen] bounds].size.width-320)/2,shift, 320, 568);
-    
-    
-    
+  
     //   NSUserDefaults *localDefaults=[NSUserDefaults standardUserDefaults];
+    
+    
+    [subscriptionsSwitch setOn:[[parameters objectForKey:@"SubscriptionSwitch"] boolValue] animated:NO];
+    
     if([parameters objectForKey:@"Match ID"] && [[parameters objectForKey:@"ReadAndAgreedTo"] boolValue]){
-        theMessage.hidden=NO;
-        [theMessage becomeFirstResponder];
-        cancelMessage.hidden=NO;
-        showMatch.hidden=NO;
-        tapEntry.hidden=YES;
-        deleteEntries.hidden=YES;
-        infoButton.hidden=YES;
-        theMessage.text=[NSString stringWithFormat:@"Send to: %@         From: %i-%@\n              Date: %@  \nWe Match.  If you are interested in Ride Sharing please respond to his message.",[parameters objectForKey:@"Match ID"],[[parameters objectForKey:@"iCloudRecordID"] intValue],[[@"ABCDE" substringFromIndex:[[parameters objectForKey:@"RideSelected"]  intValue] ] substringToIndex:1],[dateFormat stringFromDate:[NSDate dateWithTimeIntervalSinceNow:0]] ];
+    
+        now=[[NSDate alloc] init];
+        theMessage.text=[NSString stringWithFormat:@"To:  %@   From: %i-%@\n             Date: %@  \nWe Match.  If you are interested in Ride Sharing please respond to this message.",[parameters objectForKey:@"Match ID"],[[parameters objectForKey:@"iCloudRecordID"] intValue],[[@"ABCDE" substringFromIndex:[[parameters objectForKey:@"RideSelected"]  intValue] ] substringToIndex:1],[dateFormat stringFromDate:now]];
         
-        [parameters removeObjectForKey:@"Match ID"];
+        groupTheMessages=NO;
+        theRecordID=[NSNumber numberWithInt: [[parameters objectForKey:@"Match ID"] intValue]];
+        //      [parameters removeObjectForKey:@"Match ID"];
+        messagesFromTo.text=[NSString stringWithFormat:@"Messages To/From ID: %@",theRecordID];
         
-        theTable.frame=CGRectMake(20,60,280,80);
-        
-        
-        
+        theTable.frame=CGRectMake(10,30,300,[[UIScreen mainScreen] bounds].size.height -375);
+        status=@"Compose";
+        [self redoTheScreen];
         [theTable reloadData];
-        [theTable scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:[myMessages count]-1 inSection:0] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+        
+        [theTable scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:[myMessagePackets count]-1 inSection:0] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+        
+        requestGetMessage=YES; // do a get message after composition is done
         
     }else if ([[parameters objectForKey:@"ReadAndAgreedTo"] boolValue] && showMatch.hidden){
-  
+        //normal entry - but don't do this if the keyboard is showing
+      //  NSLog(@"A");
         [self getMessages:nil];
-        
+        status=@"DoNothing";
+        [self redoTheScreen];
         [theTable reloadData];
-        [theTable scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:[myMessages count]-1 inSection:0] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+        [theTable scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:[myMessagePackets count]-1 inSection:0] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
         
-    }else if ([[parameters objectForKey:@"ReadAndAgreedTo"] boolValue] ){//showMatch is not hidden
+    }else if ([[parameters objectForKey:@"ReadAndAgreedTo"] boolValue] ){
+        //keyboard is showing
         [theMessage becomeFirstResponder];
+        requestGetMessage=YES; // do a get message after composition is done
     }
     
     
     if([[parameters objectForKey:@"ReadAndAgreedTo"] boolValue] &&
        [[showKeyboard titleForState:UIControlStateNormal] isEqualToString:@"Show Disclaimer"]){
-        
         // when first agreed to and when first loaded (if agreed to)
+    
         
-        disclaimerLabel.hidden=YES;
-        tapEntry.hidden=NO;
-        deleteEntries.hidden=[[myMessages objectAtIndex:0] isEqual:@"No messages"];
-        refreshMessages.hidden=NO;
-        alertsLabel.hidden=NO;
-        subscriptionsSwitch.hidden=NO;
-        infoButton.hidden=NO;
-        showKeyboard.hidden=YES;
-        [showKeyboard setTitle:@"Show keyboard" forState:UIControlStateNormal];
-        [self subscriptionSwitch:nil];
+        
+        // do i need to do this and if so in all cases?????
+        //   first load,   first read and agreed to
+        status=@"FirstTime";
+        [self redoTheScreen]; // a new step here
+        [theTable reloadData];
+ //       NSLog(@"B");
+   //     if(!requestGetMessage)[self getMessages:nil];  // delay, this will be done later
+     //   NSLog(@"C");
+    
     }
-    
-    
-    
-    
-    
-    
- //   NSLog(@"viewwillappear meassages");
-    
     
 }
 
@@ -603,6 +580,129 @@
     [self viewWillAppearStuff];
 }
 
+-(void)returnFromCloud:(NSNotification *)notification{
+   // NSLog(@"returning from Cloud");
+    if(![notification object]){//   this is the return with the unread list updated with 'from' results
+        status=@"DoNothing";
+        [self redoTheScreen];
+        [theTable reloadData];
+    }else if([[notification object] isEqual:@"ResignNoHide"]){
+        //[theMessage resignFirstResponder];
+    /*    showKeyboard.hidden=NO;
+        theMessage.hidden=NO;
+        cancelMessage.hidden=NO;
+        showMatch.hidden=NO;
+        buttonBackground.hidden=NO;
+        sendButton.hidden=NO;*/
+        theTable.frame=CGRectMake(10,30,300,[[UIScreen mainScreen] bounds].size.height -375);
+        status=@"Compose1";
+        [self redoTheScreen]; // this didn't used to do a construct step
+        [theTable reloadData];
+        
+    }else if([[notification object] isEqual:@"SubscriptionSwitch"]){
+        [subscriptionsSwitch setOn:[[parameters objectForKey:@"SubscriptionSwitch"] boolValue] animated:YES];
+    }else if([[notification object] isEqual:@"FailedToDelete"]){
+        [deleteEntries setTitle:@"Done" forState:UIControlStateNormal];
+        [self deleteEntries:nil];
+    }else if([[notification object] isEqual:@"DoneWithDelete"]){
+        [self resetTheBadge]; // a similar action takes place in CloudKitDatabase
+      //  NSLog(@"here tttt");
+        
+        
+        
+        
+        [self constructMyMessagePackets];
+        if([[myMessagePackets objectAtIndex:0] isEqual:@"No messages"]){  // need to show -close
+            [deleteEntries setTitle:@"Done" forState:UIControlStateNormal];
+            [self deleteEntries:nil];
+        }else{
+         //   NSLog(@"here 222222a");
+            [theTable deleteRowsAtIndexPaths:[NSArray arrayWithObject:[NSIndexPath indexPathForRow:rowToDelete inSection:0]] withRowAnimation:UITableViewRowAnimationFade];
+           // NSLog(@"here 222222b");
+        }
+        
+        
+        
+        /*
+        
+        if([[myMessagePackets objectAtIndex:0] isEqual:@"No messages"]){  // need to show -close
+            [deleteEntries setTitle:@"Done" forState:UIControlStateNormal];
+            [self deleteEntries:nil];
+        }else{
+            NSLog(@"here 222222a");
+            [self constructMyMessagePackets];
+            [theTable deleteRowsAtIndexPaths:[NSArray arrayWithObject:[NSIndexPath indexPathForRow:rowToDelete inSection:0]] withRowAnimation:UITableViewRowAnimationFade];
+            NSLog(@"here 222222b");
+        }
+        */
+        
+        
+        
+        
+    }else if([[notification object] isEqual:@"GotMessages"]){  // coming back with messages that have already been added to mymessages!!
+        
+        /*
+        NSArray *newMessages=[notification object];
+        NSMutableArray *unsortedMessages=[[NSMutableArray alloc] initWithCapacity:[newMessages count]];
+        
+        NSArray *theCurrentDateDs;
+        if([[myMessages objectAtIndex:0] isEqual:@"No messages"]){
+            theCurrentDateDs=[[NSArray alloc] init];
+        }else{
+            theCurrentDateDs=[myMessages valueForKey:@"DateD"];
+        }
+    //    NSLog(@"the myMessages is %@",myMessages);
+        
+        for (int I=0;I<[newMessages count]; I++){
+            if(![theCurrentDateDs containsObject:[[newMessages objectAtIndex:I] objectForKey:@"DateD"]])
+                    [unsortedMessages addObject:[newMessages objectAtIndex:I]];
+        }
+        
+        NSSortDescriptor *byDateD=[[NSSortDescriptor alloc] initWithKey:@"DateD" ascending:YES];
+        NSArray *sortedMessages=[unsortedMessages sortedArrayUsingDescriptors:[NSArray arrayWithObject:byDateD]];
+        [myMessages addObjectsFromArray:sortedMessages];
+        */
+        
+        
+     //   NSLog(@"here sssss");
+        if([myMessages count]>1 &&  [[myMessages objectAtIndex:0] isEqual:@"No messages"])[myMessages removeObjectAtIndex:0];
+        
+        
+        
+        
+        
+        
+        
+        
+        // this causes it to getMessage if a notification came in while it was sending a message
+        [self cancelMessage:@"ReturnFromiCloud"]; // only needed for send message - may call a getMessage again
+        [theMessage setText:@""];  //  only needed for send message
+        
+        
+        
+        
+        
+        [self resetTheTable];
+        [self resetTheBadge];   //   a similar procedure was done in CloudKitDatabase
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        //   this was done already:
+        //  [self clearNotificationsResetBadge];
+        
+        
+        
+        
+    }
+}
+
+/*
 -(void)iCloudErrorMessage:(NSString *)message{
     
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -620,7 +720,7 @@
     });
 }
 
-
+*/
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
@@ -637,138 +737,37 @@
     //   and set the switch to off.
     //   need to issue an error if sender is not nil and switch is off,
     
-    
-    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
-    CKContainer *defaultContainer=[CKContainer defaultContainer];
-    CKDatabase *publicDatabase=[defaultContainer publicCloudDatabase];
-    [publicDatabase fetchAllSubscriptionsWithCompletionHandler:^(NSArray *subscriptions, NSError *error) {
-        if (error) {
-          //  NSLog(@"Error in deleteAllSubscriptions: %@", error);
-            
-            // if this is from a load or user just ReadAndAgreed then don't issue error message (sender=nil)
-            
-            if(sender)
-                [self iCloudErrorMessage:@"Unable to set up Message alerts.  Please try again later."];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [subscriptionsSwitch setOn:NO animated:YES];
-         //       refreshMessages.hidden=subscriptionsSwitch.isOn;
-             });
-        } else {
-            NSMutableArray *currentSubscriptions=[[NSMutableArray alloc] initWithCapacity:[subscriptions count]];
-        //    NSLog(@"THE SUBSCRIPTION COUNT IS %lu",(unsigned long)[subscriptions count]);
-            NSString *subscriptionIDToAdd=[NSString stringWithFormat:@"%i",[[parameters objectForKey:@"iCloudRecordID"] intValue]] ;
-            for (CKSubscription *subscription in subscriptions) {
-                    [currentSubscriptions addObject:subscription.subscriptionID];
-            }
-            
-        //    NSLog(@"the arrays are %@    and %@",currentSubscriptions,subscriptionIDToAdd);
-            BOOL goalIsSubscribe=subscriptionsSwitch.isOn;
-        
-            if(!sender && [currentSubscriptions containsObject:subscriptionIDToAdd]){
-                //called from get parameters and subscription is showing iCloud.
-                //  need to set switch and register notifications on this device 'at launch'.
-                //   other devices owned by this user may have turned on subscription
-                goalIsSubscribe=YES;
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [subscriptionsSwitch setOn:YES];
-          //          refreshMessages.hidden=subscriptionsSwitch.isOn;
-                });
-            }
-            
-            
-            // register for notifications and issue an alert if necessary
-            if(goalIsSubscribe){
-           //     NSLog(@"asking about notifications");
-                
-                UIUserNotificationType types = UIUserNotificationTypeSound | UIUserNotificationTypeBadge | UIUserNotificationTypeAlert;
-                UIUserNotificationSettings *notificationSettings = [UIUserNotificationSettings settingsForTypes:types categories:nil];
-                [[UIApplication sharedApplication] registerUserNotificationSettings:notificationSettings];
-                [[UIApplication sharedApplication] registerForRemoteNotifications];
-         
-            
-            }
-            NSArray *subscriptionToAdd;
-            if(goalIsSubscribe && ![currentSubscriptions containsObject:subscriptionIDToAdd]){
-                CKNotificationInfo *notification = [CKNotificationInfo new];//[[CKNotificationInfo alloc] init];
-                //  CKNotificationInfo *notificationInfo = [CKNotificationInfo new];
-                notification.alertLocalizationKey = @"Message from %1$@ to %2$@";
-                notification.alertLocalizationArgs=[NSArray arrayWithObjects:@"From",@"ToNumber",nil];
-                notification.shouldBadge=YES;
-                notification.soundName = UILocalNotificationDefaultSoundName;
-                NSPredicate *predicate=[NSPredicate predicateWithFormat:@"ToNumber == %i",[[parameters objectForKey:@"iCloudRecordID"] intValue] ];
-                CKSubscription *itemSubscription = [[CKSubscription alloc] initWithRecordType:@"Messages" predicate:predicate subscriptionID:subscriptionIDToAdd options:CKSubscriptionOptionsFiresOnRecordCreation];
-                //      notification.desiredKeys=[NSArray arrayWithObjects:@"Messages",@"LatestMessage", nil];
-                itemSubscription.notificationInfo = notification;
-                subscriptionToAdd=[NSArray arrayWithObject:itemSubscription];
-            }else{
-                subscriptionToAdd=nil;
-            }
-            
-            NSArray *subscriptionToDelete;
-            if(!goalIsSubscribe && [currentSubscriptions containsObject:subscriptionIDToAdd] ){
-                subscriptionToDelete=[NSArray arrayWithObject:subscriptionIDToAdd];
-            }else{
-                subscriptionToDelete=nil;
-            }
-            
-            
-            if([subscriptionToDelete count]+[subscriptionToAdd count]>0){
-                //   need to do something, delete perhaps, add perhaps
-                
-                CKModifySubscriptionsOperation *modifySubscriptions=[[CKModifySubscriptionsOperation alloc] initWithSubscriptionsToSave:subscriptionToAdd subscriptionIDsToDelete:subscriptionToDelete]; // want to delete previous users of this device
-         //       NSLog(@"the arguments are %@   %@",subscriptionToAdd,subscriptionToDelete);
-                modifySubscriptions.modifySubscriptionsCompletionBlock=^(NSArray * savedSubscriptions, NSArray * deletedSubscriptionIDs, NSError * operationError){
-                    
-                    if(operationError){
-                        if(operationError.code==CKErrorPartialFailure){
-                          //  NSLog(@"a partial error saving subscriptions?????    %@",operationError);
-                            operationError=nil;
-                        }
-                    }
-                    if(operationError){
-                        int seconds=0;
-                        if(operationError.code==CKErrorServiceUnavailable || operationError.code==CKErrorRequestRateLimited)
-                            seconds=[[[operationError userInfo] objectForKey:CKErrorRetryAfterKey] intValue];
-                        if(seconds>0){
-                            [self iCloudErrorMessage:[NSString stringWithFormat:@"There was an iCloud resource issue trying to change your Message alerts.  Please try again after %i seconds.",seconds]];
-                        }else{
-                         //   NSLog(@"the error was  %@",operationError);
-                            [self iCloudErrorMessage:@"There was an error trying to change your Message alerts.  Please try again later."];
-                        }
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [subscriptionsSwitch setOn:NO animated:YES];
-                    //        refreshMessages.hidden=subscriptionsSwitch.isOn;
-                        });
-                    }else{
-                     //   NSLog(@"Subscribed succesfully - saved this subscription:  %@",savedSubscriptions);
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-                        });
-                    }
-                };
-           //     NSLog(@"and here is the subscription just before delete/add operation %@ -  %@",subscriptionNames,itemSubscription);
-                [publicDatabase addOperation:modifySubscriptions];
-            }else{
-                
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-                });
-                
-                
-            }
-            
-        }
-    }];
+ //   NSString *subscriptionSwitchStatus=@"SubscriptionSwitchNil";
+   // if(sender){
+    //    subscriptionSwitchStatus=@"SubscriptionSwitch";
+        [parameters setObject:[NSNumber numberWithBool:subscriptionsSwitch.isOn] forKey:@"SubscriptionSwitch"];
+   // }
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"MessagesProcedures" object:
+     @"SubscriptionSwitch"];
+     
+     //subscriptionSwitchStatus];
+
+
 }
 
 -(IBAction)deleteEntries:(id)sender{
     if([[deleteEntries titleForState:UIControlStateNormal] isEqualToString:@"Delete Entries"]){
         [theTable setEditing:YES animated:YES];
         [deleteEntries setTitle:@"Done" forState:UIControlStateNormal];
+        [deleteEntries setTitleColor:[UIColor colorWithRed:.9 green:0 blue:0 alpha:1] forState:UIControlStateNormal];
+        status=@"Delete";
+   //     tapEntry.hidden=YES;
+     //   closeButton.hidden=YES;
     }else{
         [theTable setEditing:NO animated:YES];
         [deleteEntries setTitle:@"Delete Entries" forState:UIControlStateNormal];
+        [deleteEntries setTitleColor:[UIColor colorWithRed:0 green:122/255. blue:1 alpha:1] forState:UIControlStateNormal];
+        status=@"EndDelete";
+    //    tapEntry.hidden=NO;
+      //  closeButton.hidden=NO;
     }
+    
+    [self redoTheScreen];
     [theTable reloadData];
 }
 
@@ -789,97 +788,183 @@
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     
-  //  NSLog(@"here ss-1");
+    
+  //  NSLog(@"here sttt");
+    
+ /*
     NSNumber *theDateToDelete;
-    if([[myMessages objectAtIndex:[indexPath row]] isKindOfClass:[NSDictionary class]])
-        theDateToDelete =[[[myMessages objectAtIndex:[indexPath row]] objectForKey:@"DateD"] copy];
+    if([[myMessagePackets objectAtIndex:[indexPath row]] isKindOfClass:[NSDictionary class]])
+        theDateToDelete =[[[myMessagePackets objectAtIndex:[indexPath row]] objectForKey:@"DateD"] copy];
     [myMessages removeObjectAtIndex:[indexPath row]];
-    if([myMessages count]==0){
-        [myMessages addObject:@"No messages"];
-        [theTable setEditing:NO animated:YES];
-        [deleteEntries setTitle:@"Delete Entries" forState:UIControlStateNormal];
-        [tableView reloadData];
-     //   NSLog(@"here 222222");
+  */
+    
+    if(groupTheMessages){
+        int numberToDelete=0;
+        long row=[indexPath row];
+        NSNumber *theIDNumberToDelete=[[myMessagePackets objectAtIndex:row] objectForKey:@"ToNumber"];
+        if([theIDNumberToDelete isEqualToNumber:[parameters objectForKey:@"iCloudRecordID"]])theIDNumberToDelete=[[myMessagePackets objectAtIndex:row] objectForKey:@"From"];
+        for(long I=[myMessages count]-1;I>=0;I--){
+            NSDictionary *aMessage=[myMessages objectAtIndex:I];
+            NSNumber *newIDNumber=[aMessage objectForKey:@"ToNumber"];
+            if([[aMessage objectForKey:@"ToNumber"] isEqualToNumber:[parameters objectForKey:@"iCloudRecordID"]])newIDNumber=[aMessage objectForKey:@"From"];
+            if([newIDNumber isEqualToNumber:theIDNumberToDelete]){
+                numberToDelete++;
+            }
+        }
+        if(numberToDelete>1){
+            UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Multiple Messages" message:[NSString stringWithFormat:@"Are you certain that you want to\ndelete all %i messages\nto ID: %@",numberToDelete, theIDNumberToDelete] preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"No, Cancel" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                status=@"DoNothing";
+                [self redoTheScreen]; // this didn't used to do the construct step
+                [theTable reloadData];
+                }];
+            [alert addAction:defaultAction];
+            
+            UIAlertAction* deleteEm = [UIAlertAction actionWithTitle:@"Yes, Delete" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {[self deleteEntriesFromIndexPath:indexPath];}];
+            [alert addAction:deleteEm];
+            
+            [self presentViewController:alert animated:YES completion:nil];
+        }else{
+            [self deleteEntriesFromIndexPath:indexPath];
+        }
     }else{
-        
-        
-        
-     //   NSLog(@"here ss0");
-        [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
-        
-        
-        CKContainer *defaultContainer=[CKContainer defaultContainer];
-        CKDatabase *publicDatabase=[defaultContainer publicCloudDatabase];
-        NSPredicate *predicate1=[NSPredicate predicateWithFormat:@"From == %i",[[parameters objectForKey:@"iCloudRecordID"] intValue] ];
-        
-        CKQuery *query1=[[CKQuery alloc] initWithRecordType:@"Messages" predicate:predicate1];
-        [publicDatabase performQuery:query1 inZoneWithID:nil completionHandler:
-         ^(NSArray *results, NSError *error){
-             if(error){
-                // NSLog(@"error 4444");
-             }else{
-               //  NSLog(@"here ss");
-                 for(int I=0;I<[results count];I++){
-                   //  NSLog(@"here ss1");
-                     
-                     if([[results objectAtIndex:I ] isKindOfClass:[NSDictionary class]]){
-                       //  NSLog(@"here ss2");
-                         if(
-                           //   this is in the predicate....... [[[results objectAtIndex:I ] objectForKey:@"From"] isEqualToNumber:[parameters objectForKey:@"iCloudRecordID"]] &&// from this device
-                            [[results objectAtIndex:I] objectForKey:@"DateD"]){
-                             
-                             if([[[results objectAtIndex:I] objectForKey:@"DateD"] isEqualToNumber:theDateToDelete]){
-                                 
-                                 
-                                 CKModifyRecordsOperation *modifyRecords= [[CKModifyRecordsOperation alloc] initWithRecordsToSave:nil recordIDsToDelete:[NSArray arrayWithObject:[[results objectAtIndex:I] recordID]]];
-                                 modifyRecords.modifyRecordsCompletionBlock=^(NSArray * savedRecords, NSArray * deletedRecordIDs, NSError * operationError){
-                                     if(operationError){
-                                   //      NSLog(@"error 222   %@",operationError);
-                                     }
-                                     dispatch_async(dispatch_get_main_queue(), ^{
-                                     });
-                                 };
-                                 [publicDatabase addOperation:modifyRecords];
-                             }
-                         }
-                     }
-                     
-                     
-                     
-                 }
-             }
-             dispatch_async(dispatch_get_main_queue(), ^{
-                     [theTable reloadData];
-                 });
-             
-         }];
+        [self deleteEntriesFromIndexPath:indexPath];
+    }
+}
+
+
+-(void)deleteEntriesFromIndexPath:(NSIndexPath *)indexPath{
+    
+    NSMutableArray *theMessagesToDelete=[[NSMutableArray alloc] init];
+    long row=[indexPath row];
+    
+    
+    NSNumber *theIDNumberToDelete=[[myMessagePackets objectAtIndex:row] objectForKey:@"ToNumber"];
+    NSNumber *theDateToDelete=[[myMessagePackets objectAtIndex:row] objectForKey:@"DateD"];
+ //   BOOL needToCheckCloud=NO;
+    if([theIDNumberToDelete isEqualToNumber:[parameters objectForKey:@"iCloudRecordID"]])theIDNumberToDelete=[[myMessagePackets objectAtIndex:row] objectForKey:@"From"];
+    for(long I=[myMessages count]-1;I>=0;I--){
+        NSDictionary *aMessage=[myMessages objectAtIndex:I];
+        if(groupTheMessages){
+            NSNumber *newIDNumber=[aMessage objectForKey:@"ToNumber"];
+            if([[aMessage objectForKey:@"ToNumber"] isEqualToNumber:[parameters objectForKey:@"iCloudRecordID"]])newIDNumber=[aMessage objectForKey:@"From"];
+            if([newIDNumber isEqualToNumber:theIDNumberToDelete]){
+             //   if([[[myMessages objectAtIndex:I] objectForKey:@"Read"] isEqualToString:@"No"])
+             //       needToCheckCloud=YES;
+                [theMessagesToDelete addObject:[myMessages objectAtIndex:I]];
+              //  [myMessages removeObjectAtIndex:I];
+            }
+        }else{
+            if([[aMessage objectForKey:@"DateD"] isEqualToNumber:theDateToDelete]){
+             //   if([[[myMessages objectAtIndex:I] objectForKey:@"Read"] isEqualToString:@"No"])
+              //      needToCheckCloud=YES;
+                [theMessagesToDelete addObject:[myMessages objectAtIndex:I]];
+              //  [myMessages removeObjectAtIndex:I];  // removes the one entry
+            }
+        }
     }
     
-  //  NSLog(@"here ss8");
+    if([theMessagesToDelete count]>0){  // need to delete all from private db
+        rowToDelete=[indexPath row];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"MessagesProcedures" object:theMessagesToDelete];
+    }
+
+    
+    
 }
+
+
 
 
 
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    
-    if([[myMessages objectAtIndex:0] isEqual:@"No messages"]){
-        tapEntry.text=@"You can only send\nmessages to a match";
-        deleteEntries.hidden=YES;
-    }else{
-        tapEntry.text=@"Tap entry to respond\n";
-        deleteEntries.hidden=tapEntry.hidden;
-    //    infoButton.hidden=tapEntry.hidden;
-    }
     return 1;
 }
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [myMessages count];
+    return [myMessagePackets count];
 }
 
+-(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
+    return 10;
+}
+
+
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
-    return 100;
+    if(groupTheMessages)return 60;
+    if(![[myMessagePackets objectAtIndex:[indexPath row]] isKindOfClass:[NSDictionary class]]  ){
+        return 60;
+    }
+    NSString *entry=[[myMessagePackets objectAtIndex:[indexPath row]] objectForKey:@"Message"];
+    NSArray *numberOfBreaks=[entry componentsSeparatedByString:@"\n"];
+    
+    int numberOfLines=entry.length/30.0 +.99;
+  //  NSLog(@"the values are %lu  %i  %li",(unsigned long)entry.length,numberOfLines, (long)[numberOfBreaks count]-1);
+    return (numberOfLines+ [numberOfBreaks count]-1)*15 + 60;
+}
+
+-(IBAction)closeGroup:(id)sender{
+    
+    NSMutableArray *messagesThatAreRead=[[NSMutableArray alloc] init];
+    if([[myMessagePackets objectAtIndex:0] isKindOfClass:[NSDictionary class]]){
+        for(int I=0;I<[myMessagePackets count];I++){  // mark the message as 'read' if 'Just downloaded'
+            if([[[myMessagePackets objectAtIndex:I] objectForKey:@"Read"] isEqualToString:@"Just downloaded"]){
+                [[[myMessagePackets objectAtIndex:I] objectForKey:@"Read"] setString:@"Yes"];
+                [messagesThatAreRead addObject:[[myMessagePackets objectAtIndex:I] objectForKey:@"DateD"]];
+            }
+        }
+    }
+    
+    if([messagesThatAreRead count]>0){
+        [self resetTheBadge];  // a similar procedure is done in CloudKitDatabase
+        //[self markAsReadTheseMessageCounters:messagesThatAreRead];
+  //      [[NSNotificationCenter defaultCenter] postNotificationName:@"MessagesProcedures" object:messagesThatAreRead];
+    }
+
+    groupTheMessages=YES;
+    NSMutableArray *rowsCurrent=[[NSMutableArray alloc] init];
+    for(long I=0;I<[myMessagePackets count];I++){
+        [rowsCurrent addObject:[NSIndexPath indexPathForRow:I inSection:0]];
+    }
+ //   [self constructMyMessagePackets];  // now with groupthemessages=YES;
+    [self redoTheScreen];
+    
+    
+    //need to find the row that contains theRecordID
+    long row=0;
+    if([[myMessagePackets objectAtIndex:0] isKindOfClass:[NSDictionary class]]){
+        for(long I=0;I<[myMessagePackets count];I++){
+            NSDictionary *aMessage=[myMessagePackets objectAtIndex:I];
+            if([theRecordID isEqualToNumber:[aMessage objectForKey:@"ToNumber"]] ||
+               [theRecordID isEqualToNumber:[aMessage objectForKey:@"From"]]){
+                row=I;
+                break;
+            }
+        }
+    }
+    
+    
+    NSMutableArray *rowsAbove=[[NSMutableArray alloc] init];
+    for(long I=0;I<row;I++){
+        [rowsAbove addObject:[NSIndexPath indexPathForRow:I inSection:0]];
+    }
+    NSArray *thisRow=[NSArray arrayWithObject:[NSIndexPath indexPathForRow:row inSection:0]];
+    NSMutableArray *rowsBelow=[[NSMutableArray alloc] init];
+    for(long I=row+1;I<[myMessagePackets count];I++){
+        [rowsBelow addObject:[NSIndexPath indexPathForRow:I inSection:0]];
+    }
+    
+    
+    [theTable beginUpdates];
+    [theTable deleteRowsAtIndexPaths:rowsCurrent withRowAnimation:UITableViewRowAnimationRight];
+    [theTable insertRowsAtIndexPaths:thisRow withRowAnimation:UITableViewRowAnimationLeft];
+    [theTable insertRowsAtIndexPaths:rowsBelow withRowAnimation:UITableViewRowAnimationBottom];
+    [theTable insertRowsAtIndexPaths:rowsAbove withRowAnimation:UITableViewRowAnimationTop];
+    [theTable endUpdates];
+    
+    
+    
 }
 
 -(UITableViewCell *) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
@@ -887,18 +972,12 @@
     
     UITableViewCell *cell;
     cell=[tableView dequeueReusableCellWithIdentifier:textCellIndentifier];
-    if(cell==nil)cell=[[UITableViewCell alloc]initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:textCellIndentifier];
-    cell.textLabel.numberOfLines=8;
-    cell.textLabel.font=[UIFont systemFontOfSize:13];
-//    cell.imageView.image=[UIImage imageNamed:@"twitter2.png"];
+  //  if(cell==nil)cell=[[UITableViewCell alloc]initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:textCellIndentifier];
+    if(cell==nil)cell=[[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:textCellIndentifier];
     
-    if([[deleteEntries titleForState:UIControlStateNormal] isEqualToString:@"Done"])
-        cell.textLabel.font=[UIFont systemFontOfSize:11];
-    
-    
-    //
-    if([[myMessages objectAtIndex:[indexPath row]] isKindOfClass:[NSDictionary class]]  ){
-        NSDictionary *aMessage=[myMessages objectAtIndex:[indexPath row]];
+    if([[myMessagePackets objectAtIndex:[indexPath row]] isKindOfClass:[NSDictionary class]]  ){
+        
+        NSDictionary *aMessage=[myMessagePackets objectAtIndex:[indexPath row]];
         NSString *theFormatedDate;
         if([[aMessage objectForKey:@"DateD"]  isKindOfClass:[NSDate class]]){
             theFormatedDate=[dateFormat stringFromDate:[aMessage objectForKey:@"DateD"]];
@@ -906,40 +985,70 @@
             theFormatedDate=[dateFormat stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:[[aMessage objectForKey:@"DateD"] doubleValue]]];
         }
         
-        cell.textLabel.textColor=[UIColor blackColor];
         
-        if([[aMessage objectForKey:@"ToNumber"] isEqualToNumber:[parameters objectForKey:@"iCloudRecordID"]]){
-            cell.textLabel.text=[NSString stringWithFormat:@"From: %i-%@        To:     %i-%@\n             Date: %@  \n%@",[[aMessage objectForKey:@"From"] intValue],[aMessage objectForKey:@"FromRide"],[[aMessage objectForKey:@"ToNumber"] intValue],[aMessage objectForKey:@"ToRide"],theFormatedDate,[aMessage objectForKey:@"Message"]];
-            if([aMessage objectForKey:@"Read"])
-                if([[aMessage objectForKey:@"Read"] isEqualToString:@"Just downloaded"])
-                    cell.textLabel.textColor=[UIColor colorWithRed:0.8 green:0.0 blue:0.0 alpha:1.0];
-                
-                
-            
-        }else{  // I sent this message to someone
-            if([aMessage objectForKey:@"Read"]){
-                
-             //   NSLog(@"the read value is set   -%@-",[aMessage objectForKey:@"Read"]);
-                if([[aMessage objectForKey:@"Read"] isEqualToString:@"No"])
-                    cell.textLabel.textColor=[UIColor colorWithRed:0.0 green:122/255. blue:1.0 alpha:1.0];
+        cell.detailTextLabel.numberOfLines=2;
+        cell.textLabel.font=[UIFont boldSystemFontOfSize:16];
+        cell.detailTextLabel.font=[UIFont systemFontOfSize:11];
+        cell.detailTextLabel.textColor=[UIColor darkGrayColor];
+        //    cell.imageView.image=[UIImage imageNamed:@"twitter2.png"];
+        if([aMessage objectForKey:@"Read"]){
+            if([[aMessage objectForKey:@"Read"] isEqualToString:@"Just downloaded"]){
+                cell.imageView.image=[UIImage imageNamed:@"dot.png"];
+            }else if([[aMessage objectForKey:@"Read"] isEqualToString:@"No"] || [[aMessage objectForKey:@"Read"] isEqualToString:@"Just saved"]){
+                cell.imageView.image=[UIImage imageNamed:@"arrow.png"];
+            }else if([[aMessage objectForKey:@"Read"] isEqualToString:@"Yes"] &&
+                     ![[aMessage objectForKey:@"ToNumber"] isEqualToNumber:[parameters objectForKey:@"iCloudRecordID"]]){
+                cell.imageView.image=[UIImage imageNamed:@"arrowgrey.png"];
+            }else{
+                cell.imageView.image=[UIImage imageNamed:@"blank line.png"];
             }
-         //   NSLog(@"a message is %@",aMessage);
-            cell.textLabel.text=[NSString stringWithFormat:@"To:     %i-%@        From: %i-%@\n             Date: %@  \n%@",[[aMessage objectForKey:@"ToNumber"] intValue],[aMessage objectForKey:@"ToRide"],[[aMessage objectForKey:@"From"] intValue],[aMessage objectForKey:@"FromRide"],theFormatedDate,[aMessage objectForKey:@"Message"]];
+        }
+        
+        if(groupTheMessages){
+            int theNumber=[[aMessage objectForKey:@"ToNumber"] intValue];
+            if([[aMessage objectForKey:@"ToNumber"] isEqualToNumber:[parameters objectForKey:@"iCloudRecordID"]])
+                theNumber=[[aMessage objectForKey:@"From"] intValue];
+            cell.textLabel.text=[NSString stringWithFormat:@"%i        %@",theNumber,theFormatedDate];
+            cell.detailTextLabel.text=  [aMessage objectForKey:@"Message"];
+          
+        }else{
+            NSArray *numberOfBreaks=[[aMessage objectForKey:@"Message"] componentsSeparatedByString:@"\n"];
+            
+            cell.detailTextLabel.numberOfLines=[[aMessage objectForKey:@"Message"] length]/30.0 + [numberOfBreaks count];
+            cell.textLabel.numberOfLines=2;
+            cell.textLabel.font=[UIFont boldSystemFontOfSize:13];
+            cell.detailTextLabel.font=[UIFont systemFontOfSize:13];
+            cell.detailTextLabel.text=[aMessage objectForKey:@"Message"];
+            if([[aMessage objectForKey:@"ToNumber"] isEqualToNumber:[parameters objectForKey:@"iCloudRecordID"]]){
+                cell.textLabel.text=[NSString stringWithFormat:@"From: %i-%@    To:  %i-%@\n           Date: %@",[[aMessage objectForKey:@"From"] intValue],[aMessage objectForKey:@"FromRide"],[[aMessage objectForKey:@"ToNumber"] intValue],[aMessage objectForKey:@"ToRide"],theFormatedDate];
+            }else{  // I sent this message to someone
+                //   NSLog(@"a message is %@",aMessage);
+                cell.textLabel.text=[NSString stringWithFormat:@"To:  %i-%@    From: %i-%@\n           Date: %@",[[aMessage objectForKey:@"ToNumber"] intValue],[aMessage objectForKey:@"ToRide"],[[aMessage objectForKey:@"From"] intValue],[aMessage objectForKey:@"FromRide"],theFormatedDate];
+            }
             
         }
+        
+        if([[deleteEntries titleForState:UIControlStateNormal] isEqualToString:@"Done"]){
+            cell.textLabel.font=[UIFont boldSystemFontOfSize:11];
+            cell.detailTextLabel.font=[UIFont systemFontOfSize:9];
+        }
+        
+        
+    
+        
+        
     }else{
-      //  NSLog(@"doing this with this %@",[myMessages objectAtIndex:[indexPath row]]);
-        cell.textLabel.text=[myMessages objectAtIndex:[indexPath row]];
-        if([[cell.textLabel.text substringToIndex:2] isEqualToString:@"To"])
-            cell.textLabel.text=[@"    " stringByAppendingString:cell.textLabel.text];
+        cell.textLabel.font=[UIFont boldSystemFontOfSize:16];
+        cell.textLabel.text=@"        No messages\n";
+        cell.detailTextLabel.text=@"";
+        cell.imageView.image=[UIImage imageNamed:@"blank.png"];
     }
     
     
-    // This is how you change the background color
-   //     cell.selectionStyle = UITableViewCellSelectionStyleDefault;
-        UIView *bgColorView = [[UIView alloc] init];
-        bgColorView.backgroundColor = [UIColor colorWithRed:220/255. green:255/255. blue:1.0 alpha:1.0];
-        [cell setSelectedBackgroundView:bgColorView];
+    cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+    UIView *bgColorView = [[UIView alloc] init];
+    bgColorView.backgroundColor = [UIColor colorWithRed:223/255. green:255/255. blue:1.0 alpha:1.0];
+    [cell setSelectedBackgroundView:bgColorView];
     
     
     
@@ -947,58 +1056,117 @@
 }
 
 
+
 -(void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    if([[myMessages objectAtIndex:[indexPath row]] isKindOfClass:[NSDictionary class]]  ){
-        NSString *postThisMessage;
-        NSDictionary *aMessage=[myMessages objectAtIndex:[indexPath row]];
-        if([[aMessage objectForKey:@"ToNumber"] isEqualToNumber:[parameters objectForKey:@"iCloudRecordID"]]){ // this message was sent to me, i am responding
-            postThisMessage=[NSString stringWithFormat:@"Send to: %i-%@         From: %i-%@\n              Date: %@  \n",[[aMessage objectForKey:@"From"] intValue],[aMessage objectForKey:@"FromRide"],[[aMessage objectForKey:@"ToNumber"] intValue],[aMessage objectForKey:@"ToRide"],[dateFormat stringFromDate:[NSDate dateWithTimeIntervalSinceNow:0] ]];
-        }else{  // i am responding to a message I sent, this is another message to same person
-            postThisMessage=[NSString stringWithFormat:@"Send to: %i-%@         From: %i-%@\n              Date: %@  \n",[[aMessage objectForKey:@"ToNumber"] intValue],[aMessage objectForKey:@"ToRide"],[[aMessage objectForKey:@"From"] intValue],[aMessage objectForKey:@"FromRide"],[dateFormat stringFromDate:[NSDate dateWithTimeIntervalSinceNow:0]]];
+    long row=[indexPath row];
+    if ([[myMessagePackets objectAtIndex:[indexPath row]] isEqual:@"No messages"]){
+        status=@"DoNothing";
+        [self redoTheScreen]; // this didn't used to do the construct step
+        [theTable reloadData];
+        return;
+    }
+    if(groupTheMessages){
+        groupTheMessages=NO;
+        NSDictionary *aMessage=[myMessagePackets objectAtIndex:row];
+        theRecordID=[aMessage objectForKey:@"ToNumber"];
+        if([theRecordID isEqualToNumber:[parameters objectForKey:@"iCloudRecordID"]]){ // this message was sent to me, i am responding
+            theRecordID=[aMessage objectForKey:@"From"];
         }
-        theMessage.text=postThisMessage;
-        theMessage.hidden=NO;
-        [theMessage becomeFirstResponder];
-        cancelMessage.hidden=NO;
-        showMatch.hidden=NO;
-        tapEntry.hidden=YES;
-        deleteEntries.hidden=YES;
-     
-        infoButton.hidden=YES;
+        
+        //make a set with all index path rows lower than this row.
+        // make another set wiyth index path rows higher than this row
+        // make a set with this index path row
+        // make a set with indexpaths for all the new rows [mymessagepackets count]
+        // do it
+        
+        NSMutableArray *rowsAbove=[[NSMutableArray alloc] init];
+        for(long I=0;I<row;I++){
+            [rowsAbove addObject:[NSIndexPath indexPathForRow:I inSection:0]];
+        }
+        NSArray *thisRow=[NSArray arrayWithObject:[NSIndexPath indexPathForRow:row inSection:0]];
+        NSMutableArray *rowsBelow=[[NSMutableArray alloc] init];
+        for(long I=row+1;I<[myMessagePackets count];I++){
+            [rowsBelow addObject:[NSIndexPath indexPathForRow:I inSection:0]];
+        }
+    //    [self constructMyMessagePackets];  // now with groupthemessages=no;
+        [self redoTheScreen];
         
         
-        tableView.frame=CGRectMake(20,60,280,80);
-        [theTable scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+        NSMutableArray *newRows=[[NSMutableArray alloc] init];
+        for(long I=0;I<[myMessagePackets count];I++){
+            [newRows addObject:[NSIndexPath indexPathForRow:I inSection:0]];
+        }
+        [tableView beginUpdates];
+        [tableView insertRowsAtIndexPaths:newRows withRowAnimation:UITableViewRowAnimationRight];
+        [tableView deleteRowsAtIndexPaths:rowsAbove withRowAnimation:UITableViewRowAnimationTop];
+        [tableView deleteRowsAtIndexPaths:thisRow withRowAnimation:UITableViewRowAnimationLeft];
+        [tableView deleteRowsAtIndexPaths:rowsBelow withRowAnimation:UITableViewRowAnimationBottom];
+        [tableView endUpdates];
+        
+        
+        
+        messagesFromTo.text=[NSString stringWithFormat:@"Messages To/From ID: %@",theRecordID];
+        [theTable scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:[myMessagePackets count]-1 inSection:0] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+        
     }else{
         
-        NSString *postedMessage=[myMessages objectAtIndex:[indexPath row]];
-        if ([[myMessages objectAtIndex:[indexPath row]] isEqual:@"No messages"] || postedMessage.length<6) {
-            [tableView reloadData];
-        }else{
-            if([[postedMessage substringToIndex:3] isEqual:@"To "]){
-                postedMessage=[postedMessage substringFromIndex:3];  // remove "To " if there
-            }else if([[postedMessage substringToIndex:5] isEqual:@"From "]){
-                postedMessage=[postedMessage substringFromIndex:5];  // remove "From " if there
-            }else{
-                [tableView reloadData];
-                return;
-            }  //   "123456-C regarding my Ride B:  blah blah blah"
-            if(postedMessage.length>=30){
-                theMessage.text=[NSString stringWithFormat:@"Send to %@",[postedMessage substringToIndex:30]];
-                theMessage.hidden=NO;
-                [theMessage becomeFirstResponder];
-                cancelMessage.hidden=NO;
-                showMatch.hidden=NO;
-                tapEntry.hidden=YES;
-                deleteEntries.hidden=YES;
-                infoButton.hidden=YES;
-                tableView.frame=CGRectMake(20,60,280,80);
-                [theTable scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionBottom animated:YES];
-            }else{
+        if([[myMessagePackets objectAtIndex:[indexPath row]] isKindOfClass:[NSDictionary class]]  ){
+            NSString *postThisMessage;
+            NSDictionary *aMessage=[myMessagePackets objectAtIndex:[indexPath row]];
+            now=[[NSDate alloc] init];
+            if([[aMessage objectForKey:@"ToNumber"] isEqualToNumber:[parameters objectForKey:@"iCloudRecordID"]]){ // this message was sent to me, i am responding
+                postThisMessage=[NSString stringWithFormat:@"To:  %i-%@   From: %i-%@\n             Date: %@  \n",[[aMessage objectForKey:@"From"] intValue],[aMessage objectForKey:@"FromRide"],[[aMessage objectForKey:@"ToNumber"] intValue],[aMessage objectForKey:@"ToRide"],[dateFormat stringFromDate:now]];
+                
+            }else{  // i am responding to a message I sent, this is another message to same person
+                postThisMessage=[NSString stringWithFormat:@"To:  %i-%@   From: %i-%@\n             Date: %@  \n",[[aMessage objectForKey:@"ToNumber"] intValue],[aMessage objectForKey:@"ToRide"],[[aMessage objectForKey:@"From"] intValue],[aMessage objectForKey:@"FromRide"],[dateFormat stringFromDate:now]];
             }
+            theMessage.text=postThisMessage;
+            status=@"Compose";
+            [self redoTheScreen];
+            [theTable reloadData];
+          /*  theMessage.hidden=NO;
+            [theMessage becomeFirstResponder];
+            cancelMessage.hidden=NO;
+            showMatch.hidden=NO;
+            buttonBackground.hidden=NO;
+            sendButton.hidden=NO;
+            tapEntry.hidden=YES;
+            deleteEntries.hidden=YES;
+            alertsLabel.hidden=YES;
+            refreshMessages.hidden=YES;
+            messagesFromTo.hidden=YES;
+            messagesToFromBackground.hidden=YES;
+            closeButton.hidden=YES;
+            subscriptionsSwitch.hidden=YES;
+            infoButton.hidden=YES;*/
+            
+      //      theTable.frame=CGRectMake(10,30,300,[[UIScreen mainScreen] bounds].size.height -375);
+            theTable.frame=CGRectMake(10,30,300,[[UIScreen mainScreen] bounds].size.height -405);
+            [theTable scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+            
+            
+            
+            
+            
+            
+            if([[[myMessagePackets objectAtIndex:[indexPath row]] objectForKey:@"Read"] isEqualToString:@"Just downloaded"]){
+                [[[myMessagePackets objectAtIndex:[indexPath row]] objectForKey:@"Read"] setString:@"Yes"];
+                [self resetTheBadge];
+            }
+            
+            
+            
+            
+            
+            
+            
         }
+        
     }
+    
+    
+    
 }
 
 

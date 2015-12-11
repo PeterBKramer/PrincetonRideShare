@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <MapKit/MapKit.h>
-#import <CloudKit/CloudKit.h>
+//#import <CloudKit/CloudKit.h>
 
 @interface ThirdViewController : UIViewController<MKMapViewDelegate,UITableViewDataSource,UITableViewDelegate>{
         

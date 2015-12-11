@@ -7,12 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C11084F71B577878003F800B /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C11084F61B577878003F800B /* CloudKit.framework */; };
 		C11084FA1B5CA4BB003F800B /* KeychainItemWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = C11084F91B5CA4BB003F800B /* KeychainItemWrapper.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		C11084FC1B5CA73B003F800B /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C11084FB1B5CA73B003F800B /* Security.framework */; };
 		C11084FE1B63ED19003F800B /* 177-building black on white.png in Resources */ = {isa = PBXBuildFile; fileRef = C11084FD1B63ED19003F800B /* 177-building black on white.png */; };
 		C11085001B63EEAB003F800B /* 53-house white on black.png in Resources */ = {isa = PBXBuildFile; fileRef = C11084FF1B63EEAB003F800B /* 53-house white on black.png */; };
 		C118B8191B768FF100A07AED /* 96-book.png in Resources */ = {isa = PBXBuildFile; fileRef = C118B8181B768FF100A07AED /* 96-book.png */; };
+		C129FCDE1BEBDEB4005B9904 /* CheckFor999.m in Sources */ = {isa = PBXBuildFile; fileRef = C129FCDD1BEBDEB4005B9904 /* CheckFor999.m */; };
 		C12FB8D41B2371DB00ACB410 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C12FB8D31B2371DB00ACB410 /* main.m */; };
 		C12FB8D71B2371DB00ACB410 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C12FB8D61B2371DB00ACB410 /* AppDelegate.m */; };
 		C12FB8DA1B2371DB00ACB410 /* FirstViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C12FB8D91B2371DB00ACB410 /* FirstViewController.m */; };
@@ -32,9 +32,15 @@
 		C14FD7281B3A1AF1006D6721 /* f_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = C14FD7261B3A1AF1006D6721 /* f_logo.png */; };
 		C14FD7291B3A1AF1006D6721 /* twitter2.png in Resources */ = {isa = PBXBuildFile; fileRef = C14FD7271B3A1AF1006D6721 /* twitter2.png */; };
 		C14FD72B1B3A4EBB006D6721 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C14FD72A1B3A4EBB006D6721 /* CoreLocation.framework */; };
-		C1D70DB51B4648C800E187D7 /* Circle image 21.png in Resources */ = {isa = PBXBuildFile; fileRef = C1D70DB41B4648C800E187D7 /* Circle image 21.png */; };
+		C15754F61BBC9F37007FE427 /* blank line.png in Resources */ = {isa = PBXBuildFile; fileRef = C15754F51BBC9F37007FE427 /* blank line.png */; };
+		C16C92781BB5099E00BB1A1C /* dot.png in Resources */ = {isa = PBXBuildFile; fileRef = C16C92771BB5099E00BB1A1C /* dot.png */; };
+		C16C927A1BB50C4E00BB1A1C /* arrow.png in Resources */ = {isa = PBXBuildFile; fileRef = C16C92791BB50C4E00BB1A1C /* arrow.png */; };
+		C16C927C1BB50F8800BB1A1C /* blank.png in Resources */ = {isa = PBXBuildFile; fileRef = C16C927B1BB50F8800BB1A1C /* blank.png */; };
+		C1B5A3191BDABCD900F70276 /* CloudKitDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = C1B5A3181BDABCD900F70276 /* CloudKitDatabase.m */; };
 		C1D70DB71B4648D200E187D7 /* X image 21.png in Resources */ = {isa = PBXBuildFile; fileRef = C1D70DB61B4648D200E187D7 /* X image 21.png */; };
 		C1D70DB91B4739A900E187D7 /* Princeton Map.png in Resources */ = {isa = PBXBuildFile; fileRef = C1D70DB81B4739A900E187D7 /* Princeton Map.png */; };
+		C1DC00291BE321D600E01B35 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C1DC00281BE321D600E01B35 /* CloudKit.framework */; };
+		C1DC002B1BE429A200E01B35 /* arrowgrey.png in Resources */ = {isa = PBXBuildFile; fileRef = C1DC002A1BE429A200E01B35 /* arrowgrey.png */; };
 		C1FA5A4E1B897FF600F01291 /* refreshEmblem.png in Resources */ = {isa = PBXBuildFile; fileRef = C1FA5A4D1B897FF600F01291 /* refreshEmblem.png */; };
 		C1FA5A501B89935300F01291 /* sideArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = C1FA5A4F1B89935300F01291 /* sideArrow.png */; };
 /* End PBXBuildFile section */
@@ -51,13 +57,14 @@
 
 /* Begin PBXFileReference section */
 		C11084F51B57785F003F800B /* PrincetonRideShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrincetonRideShare.entitlements; sourceTree = "<group>"; };
-		C11084F61B577878003F800B /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		C11084F81B5CA4BB003F800B /* KeychainItemWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeychainItemWrapper.h; sourceTree = "<group>"; };
 		C11084F91B5CA4BB003F800B /* KeychainItemWrapper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KeychainItemWrapper.m; sourceTree = "<group>"; };
 		C11084FB1B5CA73B003F800B /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		C11084FD1B63ED19003F800B /* 177-building black on white.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "177-building black on white.png"; sourceTree = "<group>"; };
 		C11084FF1B63EEAB003F800B /* 53-house white on black.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "53-house white on black.png"; sourceTree = "<group>"; };
 		C118B8181B768FF100A07AED /* 96-book.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "96-book.png"; sourceTree = "<group>"; };
+		C129FCDC1BEBDEB4005B9904 /* CheckFor999.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CheckFor999.h; sourceTree = "<group>"; };
+		C129FCDD1BEBDEB4005B9904 /* CheckFor999.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CheckFor999.m; sourceTree = "<group>"; };
 		C12FB8CE1B2371DB00ACB410 /* PrincetonRideShare.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PrincetonRideShare.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C12FB8D21B2371DB00ACB410 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C12FB8D31B2371DB00ACB410 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -87,9 +94,16 @@
 		C14FD7261B3A1AF1006D6721 /* f_logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = f_logo.png; sourceTree = "<group>"; };
 		C14FD7271B3A1AF1006D6721 /* twitter2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = twitter2.png; sourceTree = "<group>"; };
 		C14FD72A1B3A4EBB006D6721 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
-		C1D70DB41B4648C800E187D7 /* Circle image 21.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Circle image 21.png"; sourceTree = "<group>"; };
+		C15754F51BBC9F37007FE427 /* blank line.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "blank line.png"; sourceTree = "<group>"; };
+		C16C92771BB5099E00BB1A1C /* dot.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dot.png; sourceTree = "<group>"; };
+		C16C92791BB50C4E00BB1A1C /* arrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = arrow.png; sourceTree = "<group>"; };
+		C16C927B1BB50F8800BB1A1C /* blank.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blank.png; sourceTree = "<group>"; };
+		C1B5A3171BDABCD900F70276 /* CloudKitDatabase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CloudKitDatabase.h; sourceTree = "<group>"; };
+		C1B5A3181BDABCD900F70276 /* CloudKitDatabase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CloudKitDatabase.m; sourceTree = "<group>"; };
 		C1D70DB61B4648D200E187D7 /* X image 21.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "X image 21.png"; sourceTree = "<group>"; };
 		C1D70DB81B4739A900E187D7 /* Princeton Map.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Princeton Map.png"; sourceTree = "<group>"; };
+		C1DC00281BE321D600E01B35 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
+		C1DC002A1BE429A200E01B35 /* arrowgrey.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = arrowgrey.png; sourceTree = "<group>"; };
 		C1FA5A4D1B897FF600F01291 /* refreshEmblem.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = refreshEmblem.png; sourceTree = "<group>"; };
 		C1FA5A4F1B89935300F01291 /* sideArrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = sideArrow.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -100,7 +114,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C11084FC1B5CA73B003F800B /* Security.framework in Frameworks */,
-				C11084F71B577878003F800B /* CloudKit.framework in Frameworks */,
+				C1DC00291BE321D600E01B35 /* CloudKit.framework in Frameworks */,
 				C14FD72B1B3A4EBB006D6721 /* CoreLocation.framework in Frameworks */,
 				C12FB9051B23E53C00ACB410 /* MapKit.framework in Frameworks */,
 			);
@@ -119,8 +133,8 @@
 		C12FB8C51B2371DB00ACB410 = {
 			isa = PBXGroup;
 			children = (
+				C1DC00281BE321D600E01B35 /* CloudKit.framework */,
 				C11084FB1B5CA73B003F800B /* Security.framework */,
-				C11084F61B577878003F800B /* CloudKit.framework */,
 				C14FD72A1B3A4EBB006D6721 /* CoreLocation.framework */,
 				C12FB9041B23E53C00ACB410 /* MapKit.framework */,
 				C12FB8D01B2371DB00ACB410 /* PrincetonRideShare */,
@@ -144,6 +158,10 @@
 				C11084F51B57785F003F800B /* PrincetonRideShare.entitlements */,
 				C12FB8D51B2371DB00ACB410 /* AppDelegate.h */,
 				C12FB8D61B2371DB00ACB410 /* AppDelegate.m */,
+				C1B5A3171BDABCD900F70276 /* CloudKitDatabase.h */,
+				C1B5A3181BDABCD900F70276 /* CloudKitDatabase.m */,
+				C129FCDC1BEBDEB4005B9904 /* CheckFor999.h */,
+				C129FCDD1BEBDEB4005B9904 /* CheckFor999.m */,
 				C12FB8D81B2371DB00ACB410 /* FirstViewController.h */,
 				C12FB8D91B2371DB00ACB410 /* FirstViewController.m */,
 				C12FB8DB1B2371DB00ACB410 /* SecondViewController.h */,
@@ -168,9 +186,13 @@
 		C12FB8D11B2371DB00ACB410 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				C1D70DB41B4648C800E187D7 /* Circle image 21.png */,
 				C1FA5A4F1B89935300F01291 /* sideArrow.png */,
+				C16C92791BB50C4E00BB1A1C /* arrow.png */,
+				C15754F51BBC9F37007FE427 /* blank line.png */,
+				C1DC002A1BE429A200E01B35 /* arrowgrey.png */,
+				C16C927B1BB50F8800BB1A1C /* blank.png */,
 				C1FA5A4D1B897FF600F01291 /* refreshEmblem.png */,
+				C16C92771BB5099E00BB1A1C /* dot.png */,
 				C1D70DB61B4648D200E187D7 /* X image 21.png */,
 				C14FD7261B3A1AF1006D6721 /* f_logo.png */,
 				C14FD7271B3A1AF1006D6721 /* twitter2.png */,
@@ -248,7 +270,7 @@
 		C12FB8C61B2371DB00ACB410 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0630;
+				LastUpgradeCheck = 0710;
 				ORGANIZATIONNAME = "Peter B Kramer";
 				TargetAttributes = {
 					C12FB8CD1B2371DB00ACB410 = {
@@ -295,20 +317,24 @@
 			files = (
 				C118B8191B768FF100A07AED /* 96-book.png in Resources */,
 				C1FA5A501B89935300F01291 /* sideArrow.png in Resources */,
+				C16C927A1BB50C4E00BB1A1C /* arrow.png in Resources */,
 				C1FA5A4E1B897FF600F01291 /* refreshEmblem.png in Resources */,
+				C16C927C1BB50F8800BB1A1C /* blank.png in Resources */,
 				C14FD7291B3A1AF1006D6721 /* twitter2.png in Resources */,
 				C12FB8E01B2371DB00ACB410 /* Main.storyboard in Resources */,
 				C14FD7251B3A19C0006D6721 /* ChoicesViewController.xib in Resources */,
 				C11084FE1B63ED19003F800B /* 177-building black on white.png in Resources */,
+				C16C92781BB5099E00BB1A1C /* dot.png in Resources */,
 				C12FB8FF1B23D68000ACB410 /* 112-group.png in Resources */,
 				C11085001B63EEAB003F800B /* 53-house white on black.png in Resources */,
 				C12FB9011B23D69500ACB410 /* 05-shuffle.png in Resources */,
 				C12FB8E51B2371DB00ACB410 /* LaunchScreen.xib in Resources */,
-				C1D70DB51B4648C800E187D7 /* Circle image 21.png in Resources */,
 				C1D70DB71B4648D200E187D7 /* X image 21.png in Resources */,
 				C12FB8E21B2371DB00ACB410 /* Images.xcassets in Resources */,
 				C12FB8FD1B23D66400ACB410 /* 179-notepad.png in Resources */,
+				C15754F61BBC9F37007FE427 /* blank line.png in Resources */,
 				C1D70DB91B4739A900E187D7 /* Princeton Map.png in Resources */,
+				C1DC002B1BE429A200E01B35 /* arrowgrey.png in Resources */,
 				C14FD7281B3A1AF1006D6721 /* f_logo.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -329,6 +355,8 @@
 			files = (
 				C12FB90B1B24072000ACB410 /* MessageViewController.m in Sources */,
 				C12FB8DD1B2371DB00ACB410 /* SecondViewController.m in Sources */,
+				C129FCDE1BEBDEB4005B9904 /* CheckFor999.m in Sources */,
+				C1B5A3191BDABCD900F70276 /* CloudKitDatabase.m in Sources */,
 				C12FB9081B2406EA00ACB410 /* ThirdViewController.m in Sources */,
 				C14FD7231B3A199B006D6721 /* ChoicesViewController.m in Sources */,
 				C11084FA1B5CA4BB003F800B /* KeychainItemWrapper.m in Sources */,
@@ -397,6 +425,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -467,8 +496,10 @@
 				INFOPLIST_FILE = PrincetonRideShare/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.kramerandkramersoftware.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -478,13 +509,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "LaunchImage-2";
 				CODE_SIGN_ENTITLEMENTS = PrincetonRideShare/PrincetonRideShare.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				INFOPLIST_FILE = PrincetonRideShare/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.kramerandkramersoftware.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -492,16 +525,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-				);
+				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = PrincetonRideShareTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.kramerandkramersoftware.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PrincetonRideShare.app/PrincetonRideShare";
 			};
@@ -511,12 +542,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-				);
+				FRAMEWORK_SEARCH_PATHS = "";
 				INFOPLIST_FILE = PrincetonRideShareTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.kramerandkramersoftware.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PrincetonRideShare.app/PrincetonRideShare";
 			};

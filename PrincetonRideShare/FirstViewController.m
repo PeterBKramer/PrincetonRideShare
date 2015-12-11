@@ -25,17 +25,25 @@
     containingView.frame=CGRectMake(([[UIScreen mainScreen] bounds].size.width-320)/2,shift, 320, 568);
 //    NSLog(@"......  %f",[[UIScreen mainScreen] bounds].size.height);
     
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(viewWillAppearStuff)
+                                                 name:@"UpdateIntroPage" object:nil];
     
 }
 
 -(void)viewWillAppear:(BOOL)animated{
     [super viewWillAppear:animated];
+    [self viewWillAppearStuff];
+}
+
+-(void)viewWillAppearStuff{
     if([[parameters objectForKey:@"iCloudRecordID"] intValue]==0){
-        uniqueID.text=[NSString stringWithFormat:@"iCloud Drive Id\nnot assigned"];
+        uniqueID.text=[NSString stringWithFormat:@"iCloud Drive ID\nnot assigned"];
     }else{
-        uniqueID.text=[NSString stringWithFormat:@"iCloud Drive Id:\n%i",[[parameters objectForKey:@"iCloudRecordID"] intValue]];
+        uniqueID.text=[NSString stringWithFormat:@"iCloud Drive ID:\n%i",[[parameters objectForKey:@"iCloudRecordID"] intValue]];
     }
 }
+
 -(void)getParameters:(NSMutableDictionary *)theParameters{
     parameters=theParameters;
 }
